@@ -22,6 +22,12 @@ export const postService = {
     return res.data;
   },
 
+  // Actualizar post
+  update: async (id: string, data: { title?: string; content?: string }): Promise<Post> => {
+    const res = await httpClient.put(`/posts/posts/${id}`, data);
+    return res.data;
+  },
+
   // Eliminar post
   delete: async (id: string): Promise<void> => {
     await httpClient.delete(`/posts/posts/${id}`);

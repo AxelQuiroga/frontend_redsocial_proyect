@@ -29,6 +29,17 @@ export function HomePage() {
     }
   };
 
+
+  const handleUpdatePost = async (id: string, data: { title: string; content: string }) => {
+    await postService.update(id, data);
+    await fetchPosts(); // Refresca la lista
+  };
+
+  const handleDeletePost = async (id: string) => {
+    await postService.delete(id);
+    await fetchPosts(); // Refresca la lista
+  };
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -86,7 +97,13 @@ export function HomePage() {
       ) : (
         <div>
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUserId={user?.id}
+              onEdit={handleUpdatePost}
+              onDelete={handleDeletePost}
+            />
           ))}
         </div>
       )}
