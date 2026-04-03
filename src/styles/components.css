@@ -126,3 +126,36 @@
   font-size: 0.9rem;
   margin-top: 2px;
 }
+
+/* Nav */
+.app-nav {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.app-nav a {
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.app-nav a.active {
+  color: var(--color-primary);
+}
+
+.app-nav a:hover {
+  color: var(--color-text);
+}
+
+/* Header responsive */
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .app-nav {
+    flex-wrap: wrap;
+  }
+}

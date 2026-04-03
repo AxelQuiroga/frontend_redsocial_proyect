@@ -1,34 +1,36 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
-import { HomePage } from "./pages/Home";
+import { FeedPage } from "./pages/Feed";
+import { ProfilePage } from "./pages/Profile";
+import { BaseLayout } from "./layouts/BaseLayout";
 import { useAuth } from "./hooks/useAuth";
 
-// Componente para rutas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isAuthChecking } = useAuth();  // ← AGREGAR isAuthChecking
-  
-  if (isAuthChecking) return <p>Cargando...</p>;  // ← AGREGAR
-  
+  const { isAuthenticated, isAuthChecking } = useAuth();
+  if (isAuthChecking) return <p>Cargando...</p>;
   return isAuthenticated ? children : <Navigate to="/login" />;
 }
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rutas públicas */}
+        {/* públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        
-        {/* Ruta protegida (ejemplo) */}
-        <Route 
-          path="/" 
+
+        {/* privadas con layout */}
+        <Route
           element={
             <ProtectedRoute>
-              <HomePage /> 
+              <BaseLayout />
             </ProtectedRoute>
-          } 
-        />
+          }
+        >
+          <Route path="/" element={<FeedPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

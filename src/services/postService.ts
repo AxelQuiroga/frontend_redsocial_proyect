@@ -3,16 +3,14 @@ import type { Post, PostWithAuthor, PaginatedPosts, CreatePostDTO } from "../typ
 
 export const postService = {
   // Listar todos los posts (feed público) - con paginación
-  getAll: async (page: number = 1, limit: number = 10): Promise<PaginatedPosts> => {
-    const res = await httpClient.get("/posts", {
-      params: { page, limit }
-    });
-    return res.data;
-  },
+getAll: async (page = 1, limit = 10): Promise<PaginatedPosts> => {
+  const res = await httpClient.get("/posts", { params: { page, limit } });
+  return res.data; // ahora res.data tiene { data, meta }
+},
 
   // Obtener mis posts (del usuario logueado)
   getMyPosts: async (): Promise<PostWithAuthor[]> => {
-    const res = await httpClient.get("/posts/posts/me");
+    const res = await httpClient.get("/posts/me");
     return res.data;
   },
 
@@ -24,12 +22,12 @@ export const postService = {
 
   // Actualizar post
   update: async (id: string, data: { title?: string; content?: string }): Promise<Post> => {
-    const res = await httpClient.put(`/posts/posts/${id}`, data);
+    const res = await httpClient.put(`/posts/${id}`, data);
     return res.data;
   },
 
   // Eliminar post
   delete: async (id: string): Promise<void> => {
-    await httpClient.delete(`/posts/posts/${id}`);
+    await httpClient.delete(`/posts/${id}`);
   },
 };
