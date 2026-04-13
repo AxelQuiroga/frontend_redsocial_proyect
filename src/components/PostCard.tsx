@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PostWithAuthor } from "../types/post";
+import { Link } from "react-router-dom";
 
 interface PostCardProps {
   post: PostWithAuthor;
@@ -119,24 +120,15 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
       }}
     >
       <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            backgroundColor: "#4f46e5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontWeight: "bold",
-            marginRight: "12px",
-          }}
-        >
+        <div className="avatar" style={{ marginRight: "12px" }}>
           {post.author.username.charAt(0).toUpperCase()}
         </div>
         <div>
-          <h4 style={{ margin: 0, color: "#1f2937" }}>{post.author.username}</h4>
+          <h4 style={{ margin: 0 }}>
+            <Link to={`/u/${post.author.username}`} className="post-author-link">
+              {post.author.username}
+            </Link>
+          </h4>
           <small style={{ color: "#6b7280" }}>
             {new Date(post.createdAt).toLocaleDateString("es-ES", {
               day: "numeric",

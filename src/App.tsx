@@ -4,8 +4,9 @@ import { RegisterPage } from "./pages/Register";
 import { FeedPage } from "./pages/Feed";
 import { ProfilePage } from "./pages/Profile";
 import { BaseLayout } from "./layouts/BaseLayout";
+import { PublicLayout } from "./layouts/PublicLayout";
 import { useAuth } from "./hooks/useAuth";
-
+import { PublicProfilePage } from "./pages/PublicProfile";
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAuthChecking } = useAuth();
   if (isAuthChecking) return <p>Cargando...</p>;
@@ -19,7 +20,9 @@ function App() {
         {/* públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
+        <Route element={<PublicLayout />}>
+          <Route path="/u/:username" element={<PublicProfilePage />} />
+        </Route>
         {/* privadas con layout */}
         <Route
           element={
@@ -28,6 +31,8 @@ function App() {
             </ProtectedRoute>
           }
         >
+          
+
           <Route path="/" element={<FeedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>

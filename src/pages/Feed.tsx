@@ -33,7 +33,7 @@ export function FeedPage() {
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
 
   return (
-    <div className="container">
+    <div>
       <h2 style={{ marginBottom: "var(--space-md)" }}>Feed público</h2>
 
       {posts.length === 0 ? (

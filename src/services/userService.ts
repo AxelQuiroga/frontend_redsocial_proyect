@@ -1,11 +1,17 @@
 import { httpClient } from "../infrastructure/http/httpClient";
 import type { LoginResponse } from "../types/auth";
+import type { UserPrivateProfile, UserPublicProfile, UpdateProfilePayload } from "../types/profile";
 
 export const userService = {
-  getMe: async () => {
-    const res = await httpClient.get("/users/me");
-    return res.data;
-  },
+  getMe: async (): Promise<UserPrivateProfile> => {
+  const res = await httpClient.get("/users/me");
+  return res.data;
+},
+
+getUserProfile: async (username: string): Promise<UserPublicProfile> => {
+  const res = await httpClient.get(`/users/u/${username}`);
+  return res.data;
+},
 
   login: async (email: string, password: string): Promise<LoginResponse> =>{
     const res = await httpClient.post("/users/login", {
@@ -21,4 +27,10 @@ export const userService = {
   });
   return res.data;
 },
+
+updateProfile: async (data: UpdateProfilePayload): Promise<UserPrivateProfile> => {
+  const res = await httpClient.put("/users/me", data);
+  return res.data;
+},
+
 };

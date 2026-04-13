@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import { userService } from "../services/userService";
 import type { User } from "../types/auth";
 
+
 interface UseAuthReturn {
   user: User | null;
   isAuthenticated: boolean;
   isAuthChecking: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -66,12 +68,17 @@ export function useAuth(): UseAuthReturn {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    await fetchUser();
+  };
+
   return {
     user,
     isAuthenticated: !!user,
     isAuthChecking,
     login,
     logout,
+    refreshUser,
     loading,
     error,
   };
