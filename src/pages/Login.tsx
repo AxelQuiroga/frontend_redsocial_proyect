@@ -19,40 +19,40 @@ export function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto", padding: "20px" }}>
+    <div className="auth-container">
       <h2>Iniciar Sesión</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
+      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
           <label>Email:</label>
           <input
             type="email"
+            className="auth-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
           />
         </div>
-        <div style={{ marginBottom: "15px" }}>
+        <div className="form-group">
           <label>Contraseña:</label>
           <input
             type="password"
+            className="auth-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          style={{ width: "100%", padding: "10px" }}
+          className="auth-button"
         >
           {loading ? "Cargando..." : "Ingresar"}
         </button>
       </form>
-      <p style={{ textAlign: "center", marginTop: "15px" }}>
-        ¿No tienes cuenta? <a href="/register" style={{ color: "blue" }}>Registrarte</a>
+      <p className="auth-link">
+        ¿No tienes cuenta? <a href="/register">Registrarte</a>
       </p>
     </div>
   );

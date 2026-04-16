@@ -29,44 +29,44 @@ export function RegisterPage() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto", padding: "20px" }}>
+    <div className="auth-container">
       <h2>Registrarse</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
+      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
           <label>Username:</label>
           <input
             type="text"
+            className="auth-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
           />
         </div>
-        <div style={{ marginBottom: "15px" }}>
+        <div className="form-group">
           <label>Email:</label>
           <input
             type="email"
+            className="auth-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
           />
         </div>
-        <div style={{ marginBottom: "15px" }}>
+        <div className="form-group">
           <label>Contraseña:</label>
           <input
             type="password"
+            className="auth-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
           />
         </div>
         <button 
           type="submit" 
           disabled={loading}
-          style={{ width: "100%", padding: "10px" }}
+          className="auth-button"
         >
           {loading ? "Cargando..." : "Registrarse"}
         </button>

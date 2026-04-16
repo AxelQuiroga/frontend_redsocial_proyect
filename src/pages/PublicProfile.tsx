@@ -15,7 +15,8 @@ export function PublicProfilePage() {
         if (!username) return;
         const data = await userService.getUserProfile(username);
         setProfile(data);
-      } catch {
+      } catch (err) {
+        console.error("Error al cargar perfil:", err);
         setError("No se pudo cargar el perfil");
       } finally {
         setLoading(false);
@@ -29,11 +30,11 @@ export function PublicProfilePage() {
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
   if (!profile) return <p className="text-secondary">Perfil no encontrado</p>;
 
-  const websiteHref = profile.website
+  const websiteHref = profile.website && profile.website.trim()
     ? profile.website.startsWith("http://") || profile.website.startsWith("https://")
       ? profile.website
       : `https://${profile.website}`
-    : "";
+    : undefined;
 
   return (
     <div className="section">
@@ -54,13 +55,13 @@ export function PublicProfilePage() {
             />
           ) : (
             <div className="avatar avatar-lg profile-avatar">
-              {(profile.displayName || profile.username)[0]?.toUpperCase()}
+              {(profile.displayName || profile.username || "?")[0]?.toUpperCase()}
             </div>
           )}
 
           <div>
-            <h2 className="section-title">{profile.displayName || profile.username}</h2>
-            <p className="text-secondary">@{profile.username}</p>
+            <h2 className="section-title">{profile.displayName || profile.username || "Usuario"}</h2>
+            <p className="text-secondary">@{profile.username || "usuario"}</p>
           </div>
         </div>
 
@@ -68,8 +69,8 @@ export function PublicProfilePage() {
           {profile.bio && <p>{profile.bio}</p>}
 
           <div className="profile-badges">
-            {profile.location && <span>ðŸ“ {profile.location}</span>}
-            {profile.website && (
+            {profile.location && <span>📍 {profile.location}</span>}
+            {websiteHref && (
               <a href={websiteHref} target="_blank" rel="noreferrer">
                 {profile.website}
               </a>

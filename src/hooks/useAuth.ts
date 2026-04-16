@@ -35,7 +35,8 @@ export function useAuth(): UseAuthReturn {
     try {
       const userData = await userService.getMe();
       setUser(userData);
-    } catch {
+    } catch (err) {
+      console.error("Error al obtener usuario:", err);
       localStorage.removeItem("token");
       setUser(null);
     } finally {

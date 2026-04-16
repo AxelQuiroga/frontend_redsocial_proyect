@@ -298,7 +298,55 @@
   gap: var(--space-md);
 }
 
+/* Custom profile classes */
+.profile-cover-custom {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
 
+.profile-avatar-custom {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  z-index: 10;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 48px;
+}
+
+.profile-avatar-container {
+  margin-top: -60px;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+.profile-stats {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  gap: 24px;
+}
+
+.profile-edit-section {
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
+}
 
 /* Header responsive */
 @media (max-width: 720px) {
@@ -321,4 +369,189 @@
     align-items: flex-start;
     margin-top: -32px;
   }
+
+  .profile-avatar-custom {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+
+  .profile-avatar-container {
+    margin-top: -40px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* PostCard */
+.post-card {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background-color: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.post-card-editing {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background-color: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.post-card-editing:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.post-card-avatar {
+  margin-right: 12px;
+}
+
+.post-card-title {
+  margin: 0 0 10px 0;
+  color: var(--color-text);
+  font-size: 1.25rem;
+}
+
+.post-card-content {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.post-card-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.post-card-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.post-card-button:hover {
+  color: var(--color-text);
+}
+
+.post-card-button-primary {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+.post-card-button-secondary {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.post-card-button-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.post-card-input {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.post-card-error {
+  color: var(--color-danger);
+  margin-bottom: 12px;
+}
+
+.post-card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-card-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Auth pages */
+.auth-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 15px;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.auth-link a {
+  color: var(--color-primary);
 }

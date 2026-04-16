@@ -18,7 +18,8 @@ export function FeedPage() {
       const res = await postService.getAll(page, limit);
       setPosts(res.data);
       setMeta(res.meta);
-    } catch {
+    } catch (err) {
+      console.error("Error al cargar feed:", err);
       setError("Error al cargar el feed");
     } finally {
       setLoading(false);

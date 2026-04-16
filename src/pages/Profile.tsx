@@ -57,7 +57,8 @@ export function ProfilePage() {
       setPostsError("");
       const data = await postService.getMyPosts();
       setPosts(data);
-    } catch {
+    } catch (err) {
+      console.error("Error al cargar posts:", err);
       setPostsError("Error al cargar mis posts");
     } finally {
       setPostsLoading(false);
@@ -69,13 +70,23 @@ export function ProfilePage() {
   }, []);
 
   const handleUpdatePost = async (id: string, data: { title: string; content: string }) => {
-    await postService.update(id, data);
-    await fetchMyPosts();
+    try {
+      await postService.update(id, data);
+      await fetchMyPosts();
+    } catch (err) {
+      console.error("Error al actualizar post:", err);
+      setPostsError("Error al actualizar el post");
+    }
   };
 
   const handleDeletePost = async (id: string) => {
-    await postService.delete(id);
-    await fetchMyPosts();
+    try {
+      await postService.delete(id);
+      await fetchMyPosts();
+    } catch (err) {
+      console.error("Error al eliminar post:", err);
+      setPostsError("Error al eliminar el post");
+    }
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -90,7 +101,8 @@ export function ProfilePage() {
       setTitle("");
       setContent("");
       await fetchMyPosts();
-    } catch {
+    } catch (err) {
+      console.error("Error al crear post:", err);
       setCreateError("Error al crear el post");
     } finally {
       setIsSubmitting(false);
@@ -103,18 +115,30 @@ export function ProfilePage() {
     setProfileError("");
     setProfileSuccess("");
 
-    const payload = {
-      displayName: displayName.trim() ? displayName.trim() : null,
-      bio: bio.trim() ? bio.trim() : null,
-      avatarUrl: avatarUrl.trim() ? avatarUrl.trim() : null,
-      coverUrl: coverUrl.trim() ? coverUrl.trim() : null,
-      location: location.trim() ? location.trim() : null,
-      website: website.trim() ? website.trim() : null
-    };
+    // Solo enviar campos que el usuario modificó
+    const payload: Record<string, string | null> = {};
+    if (displayName.trim() !== (user?.displayName ?? "")) {
+      payload.displayName = displayName.trim() || null;
+    }
+    if (bio.trim() !== (user?.bio ?? "")) {
+      payload.bio = bio.trim() || null;
+    }
+    if (avatarUrl.trim() !== (user?.avatarUrl ?? "")) {
+      payload.avatarUrl = avatarUrl.trim() || null;
+    }
+    if (coverUrl.trim() !== (user?.coverUrl ?? "")) {
+      payload.coverUrl = coverUrl.trim() || null;
+    }
+    if (location.trim() !== (user?.location ?? "")) {
+      payload.location = location.trim() || null;
+    }
+    if (website.trim() !== (user?.website ?? "")) {
+      payload.website = website.trim() || null;
+    }
 
-    const hasAnyField = Object.values(payload).some((v) => v !== null);
+    const hasAnyField = Object.keys(payload).length > 0;
     if (!hasAnyField) {
-      setProfileError("Completa al menos un campo para actualizar.");
+      setProfileError("Modifica al menos un campo para actualizar.");
       setIsProfileSaving(false);
       return;
     }
@@ -130,7 +154,8 @@ export function ProfilePage() {
       await refreshUser();
       setProfileSuccess("Perfil actualizado.");
       setIsEditingProfile(false); // ← Cerrar formulario al guardar
-    } catch {
+    } catch (err) {
+      console.error("Error al actualizar perfil:", err);
       setProfileError("Error al actualizar el perfil.");
     } finally {
       setIsProfileSaving(false);
@@ -143,56 +168,82 @@ export function ProfilePage() {
   };
 
   // Helper para obtener href de website
-  const websiteHref = website?.startsWith("http") ? website : `https://${website}`;
+  const websiteHref = website && website.trim()
+    ? website.startsWith("http") ? website : `https://${website}`
+    : undefined;
 
   return (
     <div className="section">
       {/* ─── PERFIL (VISTA O EDICIÓN) ─── */}
       <div className="card">
-        {!isEditingProfile ? (
-          // ─── VISTA DE PERFIL (SOLO LECTURA) ───
-          <div className="profile-header-row">
-            <div className="profile-view">
-              <div className="avatar avatar-lg">
-                {avatarUrl ? (
-                  <img 
-                    src={avatarUrl} 
-                    alt="Avatar" 
-                    style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
-                  />
-                ) : (
-                  user?.username?.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="profile-view-info">
-                <h2>{displayName || user?.username}</h2>
-                <p className="username">@{user?.username}</p>
-                {bio && <p className="bio">{bio}</p>}
-                <div className="profile-view-meta">
-                  {location && <span>📍 {location}</span>}
-                  {website && (
-                    <a href={websiteHref} target="_blank" rel="noreferrer">
-                      🔗 {website}
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => {
-                resetProfileForm();
-                setIsEditingProfile(true);
-              }}
-              title="Editar perfil"
-            >
-              ✏️ Editar
-            </button>
+        {/* Header con cover image siempre visible */}
+        <div 
+          className="profile-cover-custom"
+          style={{
+            background: coverUrl 
+              ? `url(${coverUrl})` 
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          }}
+        />
+        
+        {/* Avatar y stats siempre visibles */}
+        <div className="profile-avatar-container">
+          <div className="profile-avatar-custom">
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt="Avatar" 
+                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
+              />
+            ) : (
+              <span>{displayName?.charAt(0).toUpperCase() || "?"}</span>
+            )}
           </div>
-        ) : (
-          // ─── FORMULARIO DE EDICIÓN ───
-          <>
+          <div style={{ marginLeft: "20px", flex: 1, marginBottom: "20px" }}>
+            <h2 style={{ margin: 0, fontSize: "24px" }}>{displayName || "Usuario"}</h2>
+            <p className="username" style={{ margin: "4px 0 0" }}>@{user?.username || "usuario"}</p>
+            {bio && <p className="bio" style={{ margin: "8px 0 0" }}>{bio}</p>}
+            <div className="profile-view-meta" style={{ marginTop: "12px" }}>
+              {location && <span>📍 {location}</span>}
+              {websiteHref && (
+                <a href={websiteHref} target="_blank" rel="noreferrer">
+                  🔗 {website}
+                </a>
+              )}
+            </div>
+            {!isEditingProfile && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  resetProfileForm();
+                  setIsEditingProfile(true);
+                }}
+                title="Editar perfil"
+              >
+                ✏️ Editar
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Stats Section siempre visible */}
+        <div className="profile-stats">
+          <div>
+            <div style={{ fontSize: "24px", fontWeight: "bold" }}>{posts.length}</div>
+            <div style={{ fontSize: "14px", color: "#666" }}>Posts</div>
+          </div>
+          <div>
+            <div style={{ fontSize: "24px", fontWeight: "bold" }}>
+              {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("es-ES", { month: "short", year: "numeric" }) : "-"}
+            </div>
+            <div style={{ fontSize: "14px", color: "#666" }}>Se unió</div>
+          </div>
+        </div>
+
+        {/* Formulario de edición (aparece debajo cuando isEditingProfile) */}
+        {isEditingProfile && (
+          <div className="profile-edit-section">
             <div className="profile-header-row" style={{ marginBottom: "var(--space-md)" }}>
               <h3 className="section-title">Editar perfil</h3>
             </div>
@@ -282,7 +333,7 @@ export function ProfilePage() {
                 </button>
               </div>
             </form>
-          </>
+          </div>
         )}
       </div>
 
@@ -327,10 +378,8 @@ export function ProfilePage() {
       <div>
         <h2 className="section-title">Mis Posts</h2>
 
+        {postsLoading && <p className="text-secondary">Cargando posts...</p>}
         {postsError && <p style={{ color: "var(--color-danger)" }}>{postsError}</p>}
-        {postsLoading && posts.length === 0 && (
-          <p className="text-secondary">Cargando posts...</p>
-        )}
         {!postsLoading && !postsError && posts.length === 0 ? (
           <p className="text-secondary">No tienes posts aún. ¡Crea tu primer post!</p>
         ) : (

@@ -1,6 +1,6 @@
 export interface ProfileBase {
   id: string;
-  username: string;
+  username?: string;
   displayName: string | null;
   bio: string | null;
   avatarUrl: string | null;
