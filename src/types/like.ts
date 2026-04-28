@@ -6,6 +6,7 @@ export interface LikeResponse {
 }
 
 export interface LikeCountResponse {
-  count: number;
+  postId: string;
+  likesCount: number;
   userHasLiked: boolean;
 }

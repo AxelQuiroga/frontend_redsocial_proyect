@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { likeService } from "../services/likeService";
 
 interface LikeButtonProps {
   postId: string;
-  initialLiked: boolean;
-  initialCount: number;
 }
 
-export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonProps) {
-  const [liked, setLiked] = useState(initialLiked);
-  const [count, setCount] = useState(initialCount);
+export function LikeButton({ postId }: LikeButtonProps) {
+  const [liked, setLiked] = useState(false);
+  const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInitialLikes = async () => {
+      try {
+        const data = await likeService.getLikes(postId);
+        setLiked(data.userHasLiked);
+        setCount(data.likesCount);
+      } catch (error) {
+        console.error("Error loading initial likes:", error);
+        // Fallback a valores por defecto
+        setLiked(false);
+        setCount(0);
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    fetchInitialLikes();
+  }, [postId]);
 
   const handleToggle = async () => {
     setIsLoading(true);
@@ -26,8 +44,9 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-      setLiked(initialLiked);
-      setCount(initialCount);
+      // Revertir al estado anterior en caso de error
+      setLiked((prev) => !prev);
+      setCount((prev) => liked ? prev + 1 : prev - 1);
     } finally {
       setIsLoading(false);
     }
@@ -36,11 +55,11 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
   return (
     <button
       onClick={handleToggle}
-      disabled={isLoading}
+      disabled={isLoading || isInitialLoading}
       style={{
         border: "none",
         background: "none",
-        cursor: isLoading ? "not-allowed" : "pointer",
+        cursor: isLoading || isInitialLoading ? "not-allowed" : "pointer",
         display: "flex",
         alignItems: "center",
         gap: "4px",
@@ -48,8 +67,8 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
         fontSize: "14px"
       }}
     >
-      <span>{liked ? "❤️" : "🤍"}</span>
-      <span>{count}</span>
+      <span>{isInitialLoading ? "⏳" : (liked ? "❤️" : "🤍")}</span>
+      <span>{isInitialLoading ? "..." : count}</span>
     </button>
   );
 }

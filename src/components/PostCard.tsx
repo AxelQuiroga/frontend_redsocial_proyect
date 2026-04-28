@@ -119,7 +119,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
       </p>
 
       <div className="post-card-actions">
-        <LikeButton postId={post.id} initialLiked={false} initialCount={0} />
+        <LikeButton postId={post.id} />
         <button
           onClick={() => setShowComments(!showComments)}
           className="post-card-button"
