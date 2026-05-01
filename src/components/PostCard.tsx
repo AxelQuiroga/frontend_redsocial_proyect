@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { PostWithAuthor } from "../types/post";
 import { Link } from "react-router-dom";
 import { LikeButton } from "./LikeButton";
 import { CommentList } from "./CommentList";
+
+// Utilidad para sanitizar contenido y prevenir XSS
+const sanitizeContent = (content: string): string => {
+  return content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+};
 
 interface PostCardProps {
   post: PostWithAuthor;
@@ -19,6 +29,12 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showComments, setShowComments] = useState(false);
+
+  // Sincronizar estado local con props externas
+  useEffect(() => {
+    setTitle(post.title);
+    setContent(post.content);
+  }, [post.title, post.content]);
 
   const isAuthor = currentUserId === post.author.id;
   const canEdit = isAuthor && onEdit;
@@ -46,11 +62,13 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
     if (!onDelete || !window.confirm("¿Eliminar este post?")) return;
 
     setIsDeleting(true);
+    setError("");
     try {
       await onDelete(post.id);
     } catch (err) {
       console.error("Error al eliminar post:", err);
-      setError("Error al eliminar");
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      setError(`Error al eliminar: ${errorMessage}`);
       setIsDeleting(false);
     }
   };
@@ -111,11 +129,11 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
       </div>
 
       <h3 className="post-card-title">
-        {post.title}
+        {sanitizeContent(post.title)}
       </h3>
 
       <p className="post-card-content">
-        {post.content}
+        {sanitizeContent(post.content)}
       </p>
 
       <div className="post-card-actions">
@@ -127,7 +145,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
           💬 {showComments ? "Ocultar comentarios" : "Ver comentarios"}
         </button>
         {canEdit && (
-          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon" style={{ marginLeft: "auto" }}>✏️</button>
+          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon post-card-button-edit">✏️</button>
         )}
         {canDelete && (
           <button onClick={handleDelete} disabled={isDeleting} title="Eliminar" className="post-card-button-icon">

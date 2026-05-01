@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { likeService } from "../services/likeService";
 
 interface LikeButtonProps {
@@ -12,45 +12,60 @@ export function LikeButton({ postId }: LikeButtonProps) {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchInitialLikes = async () => {
       try {
         const data = await likeService.getLikes(postId);
-        setLiked(data.userHasLiked);
-        setCount(data.likesCount);
+        if (isMounted) {
+          setLiked(data.userHasLiked);
+          setCount(data.likesCount);
+        }
       } catch (error) {
         console.error("Error loading initial likes:", error);
         // Fallback a valores por defecto
-        setLiked(false);
-        setCount(0);
+        if (isMounted) {
+          setLiked(false);
+          setCount(0);
+        }
       } finally {
-        setIsInitialLoading(false);
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
       }
     };
 
     fetchInitialLikes();
+    return () => { isMounted = false; };
   }, [postId]);
 
-  const handleToggle = async () => {
+  const handleToggle = useCallback(async () => {
+    if (isLoading || isInitialLoading) return;
+    
+    // Guardar estado original para revertir si hay error
+    const originalLiked = liked;
+    const originalCount = count;
+    
+    // Optimistic update
+    setLiked(!originalLiked);
+    setCount(originalLiked ? originalCount - 1 : originalCount + 1);
     setIsLoading(true);
+    
     try {
-      if (liked) {
+      if (originalLiked) {
         await likeService.unlike(postId);
-        setLiked(false);
-        setCount((prev) => prev - 1);
       } else {
         await likeService.like(postId);
-        setLiked(true);
-        setCount((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-      // Revertir al estado anterior en caso de error
-      setLiked((prev) => !prev);
-      setCount((prev) => liked ? prev + 1 : prev - 1);
+      // Revertir al estado original en caso de error
+      setLiked(originalLiked);
+      setCount(originalCount);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [liked, count, isLoading, isInitialLoading, postId]);
 
   return (
     <button

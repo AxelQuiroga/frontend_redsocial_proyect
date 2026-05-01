@@ -30,4 +30,10 @@ getAll: async (page = 1, limit = 10): Promise<PaginatedPosts> => {
   delete: async (id: string): Promise<void> => {
     await httpClient.delete(`/posts/${id}`);
   },
+
+  // Obtener posts de un usuario específico (endpoint optimizado)
+  getPostsByUser: async (username: string, page = 1, limit = 10): Promise<PaginatedPosts> => {
+    const res = await httpClient.get(`/posts/user/${username}`, { params: { page, limit } });
+    return res.data;
+  },
 };
