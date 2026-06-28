@@ -17,9 +17,11 @@ export function RegisterPage() {
       await userService.register(email, password, username);
       window.location.href = "/login";
     } catch (err: unknown) {
+       console.log("ERROR COMPLETO:", err);
       if (err && typeof err === "object" && "response" in err) {
-        const axiosError = err as { response?: { data?: { message?: string } } };
-        setError(axiosError.response?.data?.message || "Error al registrarse");
+        const axiosError = err as { response?: { data?: { error?: string } } };
+         console.log("RESPONSE DATA:", axiosError.response?.data);
+        setError(axiosError.response?.data?.error || "Error al registrarse");
       } else {
         setError("Error al registrarse");
       }
