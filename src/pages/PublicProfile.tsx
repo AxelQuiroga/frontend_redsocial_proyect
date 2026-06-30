@@ -88,18 +88,20 @@ export function PublicProfilePage() {
     return () => controller.abort(); // Cleanup para prevenir race conditions
   }, [username]);
 
+  // Optimización: useMemo para evitar recálculos innecesarios
+  // IMPORTANTE: estos hooks van ANTES de los early returns para respetar
+  // las Reglas de los Hooks de React (mismo orden en cada render)
+  const websiteHref = useMemo(() => {
+    return profile?.website ? sanitizeUrl(profile.website) : undefined;
+  }, [profile?.website]);
+
+  const sanitizedCoverUrl = useMemo(() => {
+    return profile?.coverUrl ? sanitizeUrl(profile.coverUrl) : undefined;
+  }, [profile?.coverUrl]);
+
   if (loading) return <p className="text-secondary">Cargando perfil...</p>;
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
   if (!profile) return <p className="text-secondary">Perfil no encontrado</p>;
-
-  // Optimización: useMemo para evitar recálculos innecesarios
-  const websiteHref = useMemo(() => {
-    return profile.website ? sanitizeUrl(profile.website) : undefined;
-  }, [profile.website]);
-
-  const sanitizedCoverUrl = useMemo(() => {
-    return profile.coverUrl ? sanitizeUrl(profile.coverUrl) : undefined;
-  }, [profile.coverUrl]);
 
   return (
     <div className="section">
@@ -153,12 +155,11 @@ export function PublicProfilePage() {
               <PostCard 
                 key={post.id} 
                 post={post} 
-                currentUserId={null} // No hay usuario logueado en perfil público
               />
             ))}
           </div>
           
-          {posts.meta.currentPage < posts.meta.totalPages && (
+          {posts.meta.page < posts.meta.totalPages && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <button 
                 className="button button-secondary"
