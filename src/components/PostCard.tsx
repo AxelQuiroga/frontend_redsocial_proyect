@@ -3,6 +3,9 @@ import type { PostWithAuthor } from "../types/post";
 import { Link } from "react-router-dom";
 import { LikeButton } from "./LikeButton";
 import { CommentList } from "./CommentList";
+import { PostImageGallery } from "./posts/PostImageGallery";
+import { imageService } from "../services/imageService";
+import type { PostImage } from "../types/image";
 
 // Utilidad para sanitizar contenido y prevenir XSS
 const sanitizeContent = (content: string): string => {
@@ -29,6 +32,36 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [images, setImages] = useState<PostImage[]>(post.images ?? []);
+  const [imagesLoading, setImagesLoading] = useState(!post.images);
+
+  // Cargar imágenes si no vienen en el post
+  useEffect(() => {
+    if (post.images) {
+      setImages(post.images);
+      setImagesLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setImagesLoading(true);
+
+    imageService
+      .getPostImages(post.id)
+      .then((data) => {
+        if (!cancelled) {
+          setImages(data);
+          setImagesLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setImagesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [post.id, post.images]);
 
   // Sincronizar estado local con props externas
   useEffect(() => {
@@ -135,6 +168,14 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
       <p className="post-card-content">
         {sanitizeContent(post.content)}
       </p>
+
+      {/* Imágenes del post */}
+      {imagesLoading && (
+        <div className="post-card-images-loading">Cargando imágenes...</div>
+      )}
+      {!imagesLoading && images.length > 0 && (
+        <PostImageGallery images={images} />
+      )}
 
       <div className="post-card-actions">
         <LikeButton postId={post.id} />

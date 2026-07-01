@@ -1,3 +1,5 @@
+import type { PostImage } from "./image";
+
 export interface Post {
   id: string;
   title: string;
@@ -11,6 +13,7 @@ export interface Author {
   id: string;
   username: string;
 }
+
 // Post con autor incluido (findAll, findByAuthorId)
 export interface PostWithAuthor {
   id: string;
@@ -18,6 +21,10 @@ export interface PostWithAuthor {
   content: string;
   createdAt: string;
   author: Author;
+  likesCount?: number;
+  userHasLiked?: boolean;
+  /** Imágenes del post (se cargan aparte con GET /posts/:id/images) */
+  images?: PostImage[];
 }
 
 // Respuesta paginada del backend
@@ -30,6 +37,7 @@ export interface PaginatedPosts {
     totalPages: number;
   };
 }
+
 // DTOs para crear post
 export interface CreatePostDTO {
   title: string;

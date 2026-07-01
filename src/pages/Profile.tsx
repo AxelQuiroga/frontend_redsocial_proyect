@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { postService } from "../services/postService";
 import { useAuth } from "../hooks/useAuth";
 import type { PostWithAuthor } from "../types/post";
 import { PostCard } from "../components/PostCard";
 import { userService } from "../services/userService";
+import { useImageUpload } from "../hooks/useImageUpload";
+import { ImageDropzone } from "../components/posts/ImageDropzone";
+import { ImageEditorModal } from "../components/posts/ImageEditorModal";
 
 
 export function ProfilePage() {
@@ -17,6 +20,46 @@ export function ProfilePage() {
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createError, setCreateError] = useState("");
+
+  const {
+    files: imageFiles,
+    addFiles: addImageFiles,
+    removeFile: removeImageFile,
+    replaceFile: replaceImageFile,
+    reorderFiles: reorderImageFiles,
+    uploadAll: uploadImages,
+    isUploading: isImageUploading,
+    overallProgress: imageUploadProgress,
+    validationErrors: imageValidationErrors,
+    reset: resetImageUpload,
+  } = useImageUpload();
+
+  // Estado del editor de imágenes
+  const [editingFileId, setEditingFileId] = useState<string | null>(null);
+  const editingFile = editingFileId
+    ? imageFiles.find((f) => f.id === editingFileId)?.file ?? null
+    : null;
+
+  const handleEditFile = useCallback(
+    (id: string) => {
+      setEditingFileId(id);
+    },
+    []
+  );
+
+  const handleEditorApply = useCallback(
+    (editedFile: File) => {
+      if (editingFileId) {
+        replaceImageFile(editingFileId, editedFile);
+      }
+      setEditingFileId(null);
+    },
+    [editingFileId, replaceImageFile]
+  );
+
+  const handleEditorCancel = useCallback(() => {
+    setEditingFileId(null);
+  }, []);
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
@@ -97,13 +140,23 @@ export function ProfilePage() {
     setCreateError("");
 
     try {
-      await postService.create({ title, content });
+      // 1. Crear el post primero
+      const newPost = await postService.create({ title, content });
+
+      // 2. Si hay imágenes, subirlas usando el postId
+      if (imageFiles.length > 0) {
+        await uploadImages(newPost.id);
+      }
+
+      // 3. Resetear formulario e imágenes
       setTitle("");
       setContent("");
+      resetImageUpload();
       await fetchMyPosts();
     } catch (err) {
       console.error("Error al crear post:", err);
-      setCreateError("Error al crear el post");
+      const msg = err instanceof Error ? err.message : "Error al crear el post";
+      setCreateError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -341,6 +394,7 @@ export function ProfilePage() {
       <div className="card">
         <h3 style={{ marginBottom: "var(--space-md)" }}>Crear Post</h3>
         {createError && <p style={{ color: "var(--color-danger)" }}>{createError}</p>}
+
         <form onSubmit={handleCreatePost}>
           <div className="form-group">
             <label htmlFor="postTitle">Título</label>
@@ -350,6 +404,7 @@ export function ProfilePage() {
               className="input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -361,15 +416,59 @@ export function ProfilePage() {
               rows={3}
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={isSubmitting}
               required
             />
           </div>
+
+          {/* Dropzone de imágenes */}
+          <div className="form-group">
+            <label>Imágenes (opcional, máximo 5)</label>
+            <ImageDropzone
+              files={imageFiles}
+              onAddFiles={addImageFiles}
+              onRemoveFile={removeImageFile}
+              onReorderFiles={reorderImageFiles}
+              onEditFile={handleEditFile}
+              isUploading={isSubmitting}
+              validationErrors={imageValidationErrors}
+            />
+          </div>
+
+          {/* Editor modal */}
+          {editingFile && (
+            <ImageEditorModal
+              file={editingFile}
+              onApply={handleEditorApply}
+              onCancel={handleEditorCancel}
+            />
+          )}
+
+          {/* Progreso de subida */}
+          {isSubmitting && imageFiles.length > 0 && (
+            <div className="create-post-upload-progress">
+              <div className="create-post-upload-progress-bar">
+                <div
+                  className="create-post-upload-progress-fill"
+                  style={{ width: `${imageUploadProgress}%` }}
+                />
+              </div>
+              <span className="create-post-upload-progress-text">
+                Subiendo imágenes... {imageUploadProgress}%
+              </span>
+            </div>
+          )}
+
           <button
             type="submit"
             className="btn btn-primary"
             disabled={isSubmitting || !title.trim() || !content.trim()}
           >
-            {isSubmitting ? "Publicando..." : "Publicar"}
+            {isSubmitting
+              ? imageFiles.length > 0
+                ? `Subiendo imágenes (${imageUploadProgress}%)...`
+                : "Publicando..."
+              : "Publicar"}
           </button>
         </form>
       </div>
