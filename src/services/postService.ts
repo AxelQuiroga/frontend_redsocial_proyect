@@ -36,4 +36,10 @@ getAll: async (page = 1, limit = 10): Promise<PaginatedPosts> => {
     const res = await httpClient.get(`/posts/user/${username}`, { params: { page, limit } });
     return res.data;
   },
+
+  // Obtener un post por ID
+  getById: async (id: string): Promise<PostWithAuthor> => {
+    const res = await httpClient.get(`/posts/${id}`);
+    return res.data;
+  },
 };

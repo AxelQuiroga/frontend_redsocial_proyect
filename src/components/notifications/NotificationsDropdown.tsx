@@ -113,7 +113,7 @@ export function NotificationsDropdown() {
 
       // Navegar al post si tiene postId
       if (notification.postId) {
-        navigate(`/u/${notification.actorId}/post/${notification.postId}`);
+        navigate(`/posts/${notification.postId}`);
       }
     },
     [navigate]

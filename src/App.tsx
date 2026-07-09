@@ -8,6 +8,7 @@ import { BaseLayout } from "@/layouts/BaseLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { PublicProfilePage } from "@/pages/PublicProfile";
+import { PostDetailPage } from "@/pages/PostDetail";
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAuthChecking } = useAuth();
   if (isAuthChecking) return <p>Cargando...</p>;
@@ -36,6 +37,7 @@ function App() {
 
           <Route path="/" element={<FeedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
