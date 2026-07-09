@@ -15,10 +15,16 @@ httpClient.interceptors.request.use((config) => {
   return config;
 });
 
+const AUTH_ROUTES = ["/users/login", "/users/register"];
+
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthRoute = AUTH_ROUTES.some((route) =>
+      error.config?.url?.includes(route)
+    );
+
+    if (error.response?.status === 401 && !isAuthRoute) {
       tokenStorage.remove();
       window.location.href = "/login";
     }
