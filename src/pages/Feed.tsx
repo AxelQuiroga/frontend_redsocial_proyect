@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { postService } from "../services/postService";
-import type { PostWithAuthor, PaginatedPosts } from "../types/post";
-import { PostCard } from "../components/PostCard";
+import { postService } from "@/services/postService";
+import type { PostWithAuthor, PaginatedPosts } from "@/types/post";
+import { PostCard } from "@/components/PostCard";
 
 export function FeedPage() {
   const [posts, setPosts] = useState<PostWithAuthor[]>([]);

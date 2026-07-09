@@ -1,5 +1,5 @@
-import { httpClient } from "../infrastructure/http/httpClient";
-import type { LikeResponse, LikeCountResponse } from "../types/like";
+import { httpClient } from "@/infrastructure/http/httpClient";
+import type { LikeResponse, LikeCountResponse } from "@/types/like";
 
 export const likeService = {
   like: async (postId: string): Promise<LikeResponse> => {

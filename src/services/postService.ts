@@ -1,5 +1,5 @@
-import { httpClient } from "../infrastructure/http/httpClient";
-import type { Post, PostWithAuthor, PaginatedPosts, CreatePostDTO } from "../types/post";
+import { httpClient } from "@/infrastructure/http/httpClient";
+import type { Post, PostWithAuthor, PaginatedPosts, CreatePostDTO } from "@/types/post";
 
 export const postService = {
   // Listar todos los posts (feed público) - con paginación

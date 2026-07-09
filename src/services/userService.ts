@@ -1,6 +1,6 @@
-import { httpClient } from "../infrastructure/http/httpClient";
-import type { LoginResponse } from "../types/auth";
-import type { UserPrivateProfile, UserPublicProfile, UpdateProfilePayload } from "../types/profile";
+import { httpClient } from "@/infrastructure/http/httpClient";
+import type { LoginResponse } from "@/types/auth";
+import type { UserPrivateProfile, UserPublicProfile, UpdateProfilePayload } from "@/types/profile";
 
 export const userService = {
   getMe: async (): Promise<UserPrivateProfile> => {

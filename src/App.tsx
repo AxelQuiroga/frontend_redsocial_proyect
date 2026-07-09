@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LoginPage } from "./pages/Login";
-import { RegisterPage } from "./pages/Register";
-import { FeedPage } from "./pages/Feed";
-import { ProfilePage } from "./pages/Profile";
-import { BaseLayout } from "./layouts/BaseLayout";
-import { PublicLayout } from "./layouts/PublicLayout";
-import { useAuth } from "./hooks/useAuth";
-import { PublicProfilePage } from "./pages/PublicProfile";
+import { LoginPage } from "@/pages/Login";
+import { RegisterPage } from "@/pages/Register";
+import { FeedPage } from "@/pages/Feed";
+import { ProfilePage } from "@/pages/Profile";
+import { NotFoundPage } from "@/pages/NotFound";
+import { BaseLayout } from "@/layouts/BaseLayout";
+import { PublicLayout } from "@/layouts/PublicLayout";
+import { useAuth } from "@/hooks/useAuth";
+import { PublicProfilePage } from "@/pages/PublicProfile";
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAuthChecking } = useAuth();
   if (isAuthChecking) return <p>Cargando...</p>;
@@ -36,6 +37,7 @@ function App() {
           <Route path="/" element={<FeedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

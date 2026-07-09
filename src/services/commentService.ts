@@ -1,5 +1,5 @@
-import { httpClient } from "../infrastructure/http/httpClient";
-import type { Comment, CreateCommentDTO, UpdateCommentDTO } from "../types/comment";
+import { httpClient } from "@/infrastructure/http/httpClient";
+import type { Comment, CreateCommentDTO, UpdateCommentDTO } from "@/types/comment";
 
 export const commentService = {
   create: async (postId: string, data: CreateCommentDTO): Promise<Comment> => {

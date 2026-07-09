@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { likeService } from "../services/likeService";
+import { likeService } from "@/services/likeService";
 
 interface LikeButtonProps {
   postId: string;

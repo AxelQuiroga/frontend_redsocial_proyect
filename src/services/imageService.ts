@@ -1,5 +1,5 @@
-import { httpClient } from "../infrastructure/http/httpClient";
-import type { PresignResponse, ConfirmResponse, PostImage } from "../types/image";
+import { httpClient } from "@/infrastructure/http/httpClient";
+import type { PresignResponse, ConfirmResponse, PostImage } from "@/types/image";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB

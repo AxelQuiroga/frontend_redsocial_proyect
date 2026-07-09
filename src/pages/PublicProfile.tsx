@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { userService } from "../services/userService";
-import { postService } from "../services/postService";
-import { PostCard } from "../components/PostCard";
-import type { UserPublicProfile } from "../types/profile";
-import type { PaginatedPosts } from "../types/post";
+import { userService } from "@/services/userService";
+import { postService } from "@/services/postService";
+import { PostCard } from "@/components/PostCard";
+import type { UserPublicProfile } from "@/types/profile";
+import type { PaginatedPosts } from "@/types/post";
 
 // Utilidad para sanitizar URLs y prevenir XSS
 const sanitizeUrl = (url: string): string => {

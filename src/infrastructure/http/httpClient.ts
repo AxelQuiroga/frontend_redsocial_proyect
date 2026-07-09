@@ -1,4 +1,5 @@
 import axios from "axios";
+import { tokenStorage } from "@/infrastructure/tokenStorage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -7,7 +8,7 @@ export const httpClient = axios.create({
 });
 
 httpClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = tokenStorage.get();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -18,7 +19,7 @@ httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
+      tokenStorage.remove();
       window.location.href = "/login";
     }
     return Promise.reject(error);

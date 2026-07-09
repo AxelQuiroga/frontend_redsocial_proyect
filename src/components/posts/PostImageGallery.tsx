@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import type { PostImage } from "../../types/image";
+import type { PostImage } from "@/types/image";
 
 interface PostImageGalleryProps {
   images: PostImage[];

@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 
 export function BaseLayout() {
   const { user, logout } = useAuth();
@@ -32,9 +33,12 @@ export function BaseLayout() {
           </NavLink>
         </nav>
 
-        <button onClick={handleLogout} className="btn btn-danger">
-          Cerrar sesión
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <NotificationsDropdown />
+          <button onClick={handleLogout} className="btn btn-danger">
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       <main className="container">

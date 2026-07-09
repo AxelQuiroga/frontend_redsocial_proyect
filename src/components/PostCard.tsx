@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import type { PostWithAuthor } from "../types/post";
 import { Link } from "react-router-dom";
-import { LikeButton } from "./LikeButton";
-import { CommentList } from "./CommentList";
-import { PostImageGallery } from "./posts/PostImageGallery";
-import { imageService } from "../services/imageService";
-import type { PostImage } from "../types/image";
+import type { PostWithAuthor } from "@/types/post";
+import type { PostImage } from "@/types/image";
+import { LikeButton } from "@/components/LikeButton";
+import { CommentList } from "@/components/CommentList";
+import { PostEditForm } from "@/components/PostEditForm";
+import { PostImageGallery } from "@/components/posts/PostImageGallery";
+import { imageService } from "@/services/imageService";
 
 // Utilidad para sanitizar contenido y prevenir XSS
 const sanitizeContent = (content: string): string => {
@@ -27,13 +28,10 @@ interface PostCardProps {
 export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [title, setTitle] = useState(post.title);
-  const [content, setContent] = useState(post.content);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [images, setImages] = useState<PostImage[]>(post.images ?? []);
   const [imagesLoading, setImagesLoading] = useState(!post.images);
+  const [deleteError, setDeleteError] = useState("");
 
   // Cargar imágenes si no vienen en el post
   useEffect(() => {
@@ -63,84 +61,46 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
     };
   }, [post.id, post.images]);
 
-  // Sincronizar estado local con props externas
-  useEffect(() => {
-    setTitle(post.title);
-    setContent(post.content);
-  }, [post.title, post.content]);
-
   const isAuthor = currentUserId === post.author.id;
   const canEdit = isAuthor && onEdit;
   const canDelete = isAuthor && onDelete;
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim() || !onEdit) return;
-
-    setIsSubmitting(true);
-    setError("");
-
-    try {
-      await onEdit(post.id, { title: title.trim(), content: content.trim() });
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Error al guardar post:", err);
-      setError("Error al guardar los cambios");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSave = async (title: string, content: string) => {
+    if (!onEdit) return;
+    await onEdit(post.id, { title, content });
+    setIsEditing(false);
   };
 
   const handleDelete = async () => {
     if (!onDelete || !window.confirm("¿Eliminar este post?")) return;
 
     setIsDeleting(true);
-    setError("");
+    setDeleteError("");
     try {
       await onDelete(post.id);
     } catch (err) {
       console.error("Error al eliminar post:", err);
       const errorMessage = err instanceof Error ? err.message : "Error desconocido";
-      setError(`Error al eliminar: ${errorMessage}`);
+      setDeleteError(`Error al eliminar: ${errorMessage}`);
       setIsDeleting(false);
     }
   };
 
-  const handleCancel = () => {
-    setTitle(post.title);
-    setContent(post.content);
-    setError("");
-    setIsEditing(false);
-  };
-
   if (isEditing) {
     return (
-      <div className="post-card-editing">
-        {error && <p className="post-card-error">{error}</p>}
-        <form onSubmit={handleSave} className="post-card-form">
-          <div>
-            <label>Título</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} required className="post-card-input" />
-          </div>
-          <div>
-            <label>Contenido</label>
-            <textarea rows={3} value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} required className="post-card-input" />
-          </div>
-          <div className="post-card-form-actions">
-            <button type="submit" disabled={isSubmitting || !title.trim() || !content.trim()} className="post-card-button-primary">
-              {isSubmitting ? "Guardando..." : "Guardar"}
-            </button>
-            <button type="button" onClick={handleCancel} disabled={isSubmitting} className="post-card-button-secondary">
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </div>
+      <PostEditForm
+        initialTitle={post.title}
+        initialContent={post.content}
+        onSave={handleSave}
+        onCancel={() => setIsEditing(false)}
+      />
     );
   }
 
   return (
     <div className="post-card">
+      {deleteError && <p className="post-card-error">{deleteError}</p>}
+
       <div className="post-card-header">
         <div className="avatar post-card-avatar">
           {post.author.username?.charAt(0).toUpperCase() || "?"}

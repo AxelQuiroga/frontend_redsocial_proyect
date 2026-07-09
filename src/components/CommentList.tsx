@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { commentService } from "../services/commentService";
-import type { Comment } from "../types/comment";
+import { commentService } from "@/services/commentService";
+import type { Comment } from "@/types/comment";
 
 interface CommentListProps {
   postId: string;

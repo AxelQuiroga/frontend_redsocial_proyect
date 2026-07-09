@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { imageService, validateFiles } from "../services/imageService";
-import type { ImageUploadItem, PostImage } from "../types/image";
+import { imageService, validateFiles } from "@/services/imageService";
+import type { ImageUploadItem, PostImage } from "@/types/image";
 
 interface UseImageUploadReturn {
   files: ImageUploadItem[];

@@ -1,10 +1,10 @@
-import { httpClient } from "../infrastructure/http/httpClient";
+import { httpClient } from "@/infrastructure/http/httpClient";
 import type {
   NotificationsPaginatedResponse,
   UnreadCountResponse,
   MarkAsReadResponse,
-  MarkAllAsReadResponse
-} from "../types/notification";
+  MarkAllAsReadResponse,
+} from "@/types/notification";
 
 export const notificationService = {
   getNotifications: async (page = 1, limit = 10): Promise<NotificationsPaginatedResponse> => {

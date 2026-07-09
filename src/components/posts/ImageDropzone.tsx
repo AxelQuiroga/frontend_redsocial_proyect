@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from "react";
-import type { ImageUploadItem } from "../../types/image";
+import type { ImageUploadItem } from "@/types/image";
 
 interface ImageDropzoneProps {
   files: ImageUploadItem[];
