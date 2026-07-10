@@ -1,12 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronDown } from "lucide-react";
 import { userService } from "@/services/userService";
 import { postService } from "@/services/postService";
 import { followService } from "@/services/followService";
 import { PostCard } from "@/components/PostCard";
 import { FollowButton } from "@/components/FollowButton";
 import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Spinner } from "@/components/ui/Spinner";
 import type { UserPublicProfile } from "@/types/profile";
 import type { PaginatedPosts } from "@/types/post";
 import type { FollowCounts } from "@/services/followService";
@@ -115,7 +117,14 @@ export function PublicProfilePage() {
     return profile?.coverUrl ? sanitizeUrl(profile.coverUrl) : undefined;
   }, [profile?.coverUrl]);
 
-  if (loading) return <p className="text-secondary">Cargando perfil...</p>;
+  if (loading) {
+    return (
+      <div className="section">
+        <Skeleton variant="profile-header" />
+        <Skeleton variant="post-card" count={3} />
+      </div>
+    );
+  }
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
   if (!profile) return <p className="text-secondary">Perfil no encontrado</p>;
 
@@ -192,15 +201,18 @@ export function PublicProfilePage() {
           </div>
 
           {posts.meta.page < posts.meta.totalPages && (
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <button
-                className="btn btn-secondary"
-                onClick={loadMorePosts}
-                disabled={loadingMore}
-              >
-                {loadingMore ? "Cargando..." : "Cargar más posts"}
-              </button>
-            </div>
+            <button
+              className="load-more-btn"
+              onClick={loadMorePosts}
+              disabled={loadingMore}
+            >
+              {loadingMore ? (
+                <Spinner size={20} />
+              ) : (
+                <ChevronDown size={20} />
+              )}
+              {loadingMore ? "Cargando..." : "Cargar más posts"}
+            </button>
           )}
         </div>
       )}

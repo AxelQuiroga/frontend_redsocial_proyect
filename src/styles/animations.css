@@ -1,0 +1,185 @@
+/* ════════════════════════════════════════════
+   SOLAR THEME — Animaciones y micro-interacciones
+   Personalidad: Energética, cálida, con rebote
+   ════════════════════════════════════════════ */
+
+/* ─── Timing solar (con rebote) ─── */
+:root {
+  --solar-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --solar-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Skeleton shimmer ─── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #fafaf9 25%,
+    #fed7aa 37%,
+    #fafaf9 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--post-card {
+  height: 200px;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton--profile-header {
+  height: 300px;
+  margin-bottom: var(--space-lg);
+}
+
+.skeleton--avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton--text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton--text:last-child {
+  width: 60%;
+}
+
+.skeleton--title {
+  height: 24px;
+  width: 70%;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton--image {
+  width: 100%;
+  height: 200px;
+  margin-bottom: var(--space-md);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 400% 0; }
+  100% { background-position: -400% 0; }
+}
+
+/* ─── Spinner solar ─── */
+.spinner {
+  color: var(--color-primary);
+  animation: solar-spin 0.8s var(--solar-bounce) infinite;
+}
+
+@keyframes solar-spin {
+  from { transform: rotate(0deg); }
+  75% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ─── Card hover solar ─── */
+.card-hover {
+  transition:
+    transform 200ms var(--solar-bounce),
+    box-shadow 200ms var(--solar-smooth);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px) translateX(2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── PostCard hover solar ─── */
+.post-card {
+  transition:
+    transform 200ms var(--solar-bounce),
+    box-shadow 200ms var(--solar-smooth);
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+/* ─── Botón hover solar ─── */
+.btn {
+  transition:
+    transform 150ms var(--solar-bounce),
+    background-color 150ms var(--solar-smooth),
+    box-shadow 150ms var(--solar-smooth);
+}
+
+.btn:hover:not(:disabled) {
+  transform: scale(1.03) rotate(-0.5deg);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ─── Like button animación (bounce) ─── */
+.like-btn-heart {
+  transition: transform 200ms var(--solar-bounce);
+}
+
+.like-btn-heart--active {
+  color: #e0245e;
+}
+
+.like-btn-heart--animate {
+  animation: heart-bounce 400ms var(--solar-bounce);
+}
+
+@keyframes heart-bounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.35); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Cover overlay solar ─── */
+.profile-cover-custom::after,
+.profile-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(217,119,6,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.profile-cover-custom,
+.profile-cover {
+  position: relative;
+}
+
+/* ─── Load more button solar ─── */
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    all 200ms var(--solar-bounce);
+}
+
+.load-more-btn:hover:not(:disabled) {
+  transform: scale(1.02) rotate(-0.3deg);
+  border-color: var(--color-primary);
+  color: var(--color-primary-hover);
+  background: #fffbeb;
+}
+
+.load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

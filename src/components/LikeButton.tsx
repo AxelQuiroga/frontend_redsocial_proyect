@@ -11,6 +11,7 @@ export function LikeButton({ postId }: LikeButtonProps) {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [heartAnimating, setHeartAnimating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -51,6 +52,7 @@ export function LikeButton({ postId }: LikeButtonProps) {
     setLiked(!originalLiked);
     setCount(originalLiked ? originalCount - 1 : originalCount + 1);
     setIsLoading(true);
+    setHeartAnimating(true);
     
     try {
       if (originalLiked) {
@@ -83,7 +85,25 @@ export function LikeButton({ postId }: LikeButtonProps) {
         fontSize: "14px"
       }}
     >
-      <span>{isInitialLoading ? <LoaderCircle size={18} className="animate-spin" /> : (liked ? <Heart size={18} fill="#e0245e" color="#e0245e" /> : <Heart size={18} />)}</span>
+      {/* Limpiar animación después que termina */}
+      {heartAnimating && (
+        <span
+          onAnimationEnd={() => setHeartAnimating(false)}
+          style={{ display: "none" }}
+        />
+      )}
+      <span>
+        {isInitialLoading ? (
+          <LoaderCircle size={18} className="animate-spin" />
+        ) : (
+          <Heart
+            size={18}
+            className={`like-btn-heart${heartAnimating ? " like-btn-heart--animate" : ""}${liked ? " like-btn-heart--active" : ""}`}
+            fill={liked ? "#e0245e" : "none"}
+            color={liked ? "#e0245e" : undefined}
+          />
+        )}
+      </span>
       <span>{isInitialLoading ? "..." : count}</span>
     </button>
   );
