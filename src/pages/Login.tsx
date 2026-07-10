@@ -20,14 +20,14 @@ export function LoginPage() {
 
   return (
     <div className="auth-container">
-      <h2>Iniciar Sesión</h2>
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
-      <form onSubmit={handleSubmit} className="auth-form">
+      <h2 style={{ marginBottom: "var(--space-lg)" }}>Iniciar Sesión</h2>
+      {error && <p style={{ color: "var(--color-danger)", marginBottom: "var(--space-md)" }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email:</label>
           <input
             type="email"
-            className="auth-input"
+            className="input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -37,7 +37,7 @@ export function LoginPage() {
           <label>Contraseña:</label>
           <input
             type="password"
-            className="auth-input"
+            className="input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -46,13 +46,17 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="auth-button"
+          className="btn btn-primary"
+          style={{ width: "100%" }}
         >
           {loading ? "Cargando..." : "Ingresar"}
         </button>
       </form>
-      <p className="auth-link">
-        ¿No tienes cuenta? <a href="/register">Registrarte</a>
+      <p style={{ textAlign: "center", marginTop: "var(--space-lg)", color: "var(--color-text-secondary)" }}>
+        ¿No tienes cuenta?{" "}
+        <a href="/register" style={{ color: "var(--color-primary)", textDecoration: "none", fontWeight: 500 }}>
+          Registrarte
+        </a>
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { MapPin, Link as LinkIcon, Pencil } from "lucide-react";
 import type { User } from "@/types/auth";
 
 interface ProfileHeaderProps {
@@ -69,10 +70,10 @@ export function ProfileHeader({
             </p>
           )}
           <div className="profile-view-meta" style={{ marginTop: "12px" }}>
-            {location && <span>📍 {location}</span>}
+            {location && <span><MapPin size={16} /> {location}</span>}
             {websiteHref && (
               <a href={websiteHref} target="_blank" rel="noreferrer">
-                🔗 {website}
+                <LinkIcon size={16} /> {website}
               </a>
             )}
           </div>
@@ -82,7 +83,7 @@ export function ProfileHeader({
             onClick={onStartEdit}
             title="Editar perfil"
           >
-            ✏️ Editar
+            <Pencil size={16} /> Editar
           </button>
         </div>
       </div>

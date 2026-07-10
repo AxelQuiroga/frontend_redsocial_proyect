@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { MessageCircle, Pencil, Trash2, LoaderCircle } from "lucide-react";
 import type { PostWithAuthor } from "@/types/post";
 import type { PostImage } from "@/types/image";
 import { LikeButton } from "@/components/LikeButton";
@@ -169,14 +170,14 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing, f
           onClick={() => setShowComments(!showComments)}
           className="post-card-button"
         >
-          💬 {showComments ? "Ocultar comentarios" : "Ver comentarios"}
+          <MessageCircle size={18} /> {showComments ? "Ocultar comentarios" : "Ver comentarios"}
         </button>
         {canEdit && (
-          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon post-card-button-edit">✏️</button>
+          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon"><Pencil size={18} /></button>
         )}
         {canDelete && (
           <button onClick={handleDelete} disabled={isDeleting} title="Eliminar" className="post-card-button-icon">
-            {isDeleting ? "⏳" : "🗑️"}
+            {isDeleting ? <LoaderCircle size={18} className="animate-spin" /> : <Trash2 size={18} />}
           </button>
         )}
       </div>

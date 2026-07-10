@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { MessageCircle, Heart, User, Bell, Reply } from "lucide-react";
 import { notificationService } from "@/services/notificationService";
 import type { Notification } from "@/types/notification";
 
-const ICONS: Record<Notification["type"], string> = {
-  COMMENT_ON_POST: "💬",
-  REPLY_ON_COMMENT: "↩️",
-  LIKE_ON_POST: "❤️",
-  FOLLOW: "👤",
-};
+function NotificationIcon({ type }: { type: Notification["type"] }) {
+  switch (type) {
+    case "COMMENT_ON_POST": return <MessageCircle size={18} />;
+    case "REPLY_ON_COMMENT": return <Reply size={18} />;
+    case "LIKE_ON_POST": return <Heart size={18} />;
+    case "FOLLOW": return <User size={18} />;
+    default: return <Bell size={18} />;
+  }
+}
 
 function timeAgo(dateString: string): string {
   const now = Date.now();
@@ -132,7 +136,7 @@ export function NotificationsDropdown() {
         onClick={handleToggle}
         aria-label="Notificaciones"
       >
-        <span className="notifications-bell-icon">🔔</span>
+        <span className="notifications-bell-icon"><Bell size={20} /></span>
         {unreadCount > 0 && (
           <span className="notifications-badge">{unreadCount}</span>
         )}
@@ -175,7 +179,7 @@ export function NotificationsDropdown() {
                   onClick={() => handleNotificationClick(n)}
                 >
                   <span className="notifications-item-icon">
-                    {ICONS[n.type] || "🔔"}
+                    <NotificationIcon type={n.type} />
                   </span>
                   <div className="notifications-item-content">
                     <span className="notifications-item-title">{n.title}</span>

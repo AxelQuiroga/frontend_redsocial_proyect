@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { MapPin } from "lucide-react";
 import { userService } from "@/services/userService";
 import { postService } from "@/services/postService";
 import { followService } from "@/services/followService";
@@ -159,7 +160,7 @@ export function PublicProfilePage() {
           {profile.bio && <p>{profile.bio}</p>}
 
           <div className="profile-badges">
-            {profile.location && <span>📍 {profile.location}</span>}
+            {profile.location && <span><MapPin size={16} /> {profile.location}</span>}
             {websiteHref && (
               <a href={websiteHref} target="_blank" rel="noreferrer">
                 {profile.website}
@@ -193,7 +194,7 @@ export function PublicProfilePage() {
           {posts.meta.page < posts.meta.totalPages && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <button
-                className="button button-secondary"
+                className="btn btn-secondary"
                 onClick={loadMorePosts}
                 disabled={loadingMore}
               >

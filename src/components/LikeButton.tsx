@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Heart, LoaderCircle } from "lucide-react";
 import { likeService } from "@/services/likeService";
 
 interface LikeButtonProps {
@@ -82,7 +83,7 @@ export function LikeButton({ postId }: LikeButtonProps) {
         fontSize: "14px"
       }}
     >
-      <span>{isInitialLoading ? "⏳" : (liked ? "❤️" : "🤍")}</span>
+      <span>{isInitialLoading ? <LoaderCircle size={18} className="animate-spin" /> : (liked ? <Heart size={18} fill="#e0245e" color="#e0245e" /> : <Heart size={18} />)}</span>
       <span>{isInitialLoading ? "..." : count}</span>
     </button>
   );

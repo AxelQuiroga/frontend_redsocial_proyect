@@ -32,14 +32,14 @@ export function RegisterPage() {
 
   return (
     <div className="auth-container">
-      <h2>Registrarse</h2>
-      {error && <p style={{ color: "var(--color-danger)" }}>{error}</p>}
-      <form onSubmit={handleSubmit} className="auth-form">
+      <h2 style={{ marginBottom: "var(--space-lg)" }}>Registrarse</h2>
+      {error && <p style={{ color: "var(--color-danger)", marginBottom: "var(--space-md)" }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Username:</label>
           <input
             type="text"
-            className="auth-input"
+            className="input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -49,7 +49,7 @@ export function RegisterPage() {
           <label>Email:</label>
           <input
             type="email"
-            className="auth-input"
+            className="input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -59,7 +59,7 @@ export function RegisterPage() {
           <label>Contraseña:</label>
           <input
             type="password"
-            className="auth-input"
+            className="input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -68,7 +68,8 @@ export function RegisterPage() {
         <button 
           type="submit" 
           disabled={loading}
-          className="auth-button"
+          className="btn btn-primary"
+          style={{ width: "100%" }}
         >
           {loading ? "Cargando..." : "Registrarse"}
         </button>
