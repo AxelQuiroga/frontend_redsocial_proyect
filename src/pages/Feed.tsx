@@ -14,7 +14,11 @@ export function FeedPage() {
   const [meta, setMeta] = useState<PaginatedPosts["meta"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [followStatusMap, setFollowStatusMap] = useState<Record<string, boolean>>({});
+
+  // Estado de follow centralizado: status, loading, error — por authorId
+  const [followStatus, setFollowStatus] = useState<Record<string, boolean>>({});
+  const [followLoading, setFollowLoading] = useState<Record<string, boolean>>({});
+  const [followError, setFollowError] = useState<Record<string, string>>({});
 
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -22,29 +26,36 @@ export function FeedPage() {
   // AbortController para cancelar requests al cambiar página/tab
   const abortRef = useRef<AbortController | null>(null);
 
+  // Ref para trackear toggles en vuelo y evitar race conditions con batch
+  const togglingRef = useRef<Set<string>>(new Set());
+
   const fetchFollowStatus = useCallback(async (authorIds: string[]) => {
     const uniqueIds = [...new Set(authorIds)];
-    // Solo los que NO sean el usuario actual
     const targetIds = currentUser?.id
       ? uniqueIds.filter(id => id !== currentUser.id)
       : uniqueIds;
 
-    if (targetIds.length === 0) {
-      setFollowStatusMap({});
-      return;
-    }
+    if (targetIds.length === 0) return;
 
     try {
       const status = await followService.getStatusBatch(targetIds);
-      setFollowStatusMap(status);
+      // NO sobreescribir estados que están siendo toggled en este momento
+      setFollowStatus(prev => {
+        const next = { ...prev, ...status };
+        // Restaurar los que están en toggle (el optimistic update es más reciente que el batch)
+        for (const id of togglingRef.current) {
+          if (prev[id] !== undefined) {
+            next[id] = prev[id];
+          }
+        }
+        return next;
+      });
     } catch {
-      // Silencioso — el PostCard se muestra sin botón si no hay status
-      setFollowStatusMap({});
+      // Silencioso
     }
   }, [currentUser?.id]);
 
   const fetchFeed = useCallback(async () => {
-    // Cancelar request anterior si existe
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -87,9 +98,41 @@ export function FeedPage() {
     setPage(1);
   };
 
-  const handleFollowChange = useCallback((authorId: string, isFollowing: boolean) => {
-    setFollowStatusMap(prev => ({ ...prev, [authorId]: isFollowing }));
-  }, []);
+  const handleFollowToggle = useCallback(async (authorId: string) => {
+    if (!currentUser?.id) return;
+    if (followLoading[authorId]) return; // ya hay un toggle en curso
+
+    const current = followStatus[authorId] ?? false;
+    const newStatus = !current;
+
+    // Marcar toggle en vuelo (para proteger contra race conditions con batch)
+    togglingRef.current.add(authorId);
+
+    // Optimistic update
+    setFollowStatus(prev => ({ ...prev, [authorId]: newStatus }));
+    setFollowLoading(prev => ({ ...prev, [authorId]: true }));
+    setFollowError(prev => {
+      const next = { ...prev };
+      delete next[authorId];
+      return next;
+    });
+
+    try {
+      if (newStatus) {
+        await followService.follow(authorId);
+      } else {
+        await followService.unfollow(authorId);
+      }
+    } catch (err) {
+      console.error("Error al cambiar follow:", err);
+      // Revertir al estado anterior
+      setFollowStatus(prev => ({ ...prev, [authorId]: current }));
+      setFollowError(prev => ({ ...prev, [authorId]: "Error al cambiar estado. Intentalo de nuevo." }));
+    } finally {
+      setFollowLoading(prev => ({ ...prev, [authorId]: false }));
+      togglingRef.current.delete(authorId);
+    }
+  }, [currentUser?.id, followStatus, followLoading]);
 
   if (loading) return <p className="text-secondary">Cargando feed...</p>;
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
@@ -135,8 +178,10 @@ export function FeedPage() {
               key={post.id}
               post={post}
               currentUserId={currentUser?.id}
-              isFollowing={followStatusMap[post.author.id]}
-              onFollowChange={handleFollowChange}
+              isFollowing={followStatus[post.author.id]}
+              followLoading={followLoading[post.author.id]}
+              followError={followError[post.author.id]}
+              onToggleFollow={handleFollowToggle}
             />
           ))}
         </div>

@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { followService } from "@/services/followService";
 import type { PostWithAuthor } from "@/types/post";
 import type { PostImage } from "@/types/image";
 import { LikeButton } from "@/components/LikeButton";
@@ -24,18 +23,17 @@ interface PostCardProps {
   currentUserId?: string;
   onEdit?: (id: string, data: { title: string; content: string }) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
-  /** Estado inicial de follow (desde batch del feed). undefined = no mostrar botón */
+  /** Estado actual de follow. undefined = no mostrar botón */
   isFollowing?: boolean;
-  /** Callback cuando el estado de follow cambia realmente (API success) */
-  onFollowChange?: (authorId: string, isFollowing: boolean) => void;
+  /** Loading mientras se procesa el toggle (lo maneja el padre) */
+  followLoading?: boolean;
+  /** Mensaje de error si falló el último toggle */
+  followError?: string;
+  /** Callback cuando el usuario hace click en seguir/dejar de seguir */
+  onToggleFollow?: (authorId: string) => void;
 }
 
-export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: initialFollowing, onFollowChange }: PostCardProps) {
-  // Estado local de follow — inicializado desde el prop, SIN useEffect para resync
-  // Esta es la ÚNICA fuente de verdad para la UI del botón follow
-  const [isFollowing, setIsFollowing] = useState(initialFollowing ?? false);
-  const [followLoading, setFollowLoading] = useState(false);
-
+export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing, followLoading, followError, onToggleFollow }: PostCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -44,32 +42,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
   const [deleteError, setDeleteError] = useState("");
 
   const isAuthor = currentUserId === post.author.id;
-  const canShowFollow = currentUserId !== undefined && !isAuthor && initialFollowing !== undefined;
-
-  const handleFollowToggle = useCallback(async () => {
-    if (followLoading) return;
-    const previous = isFollowing;
-
-    // Optimistic update inmediato en la UI
-    setIsFollowing(!previous);
-    setFollowLoading(true);
-
-    try {
-      if (previous) {
-        await followService.unfollow(post.author.id);
-      } else {
-        await followService.follow(post.author.id);
-      }
-      // Avisar al padre del cambio real
-      onFollowChange?.(post.author.id, !previous);
-    } catch (err) {
-      console.error("Error al cambiar follow:", err);
-      // Revertir al estado anterior
-      setIsFollowing(previous);
-    } finally {
-      setFollowLoading(false);
-    }
-  }, [post.author.id, isFollowing, followLoading, onFollowChange]);
+  const canShowFollow = currentUserId !== undefined && !isAuthor && isFollowing !== undefined;
 
   // Cargar imágenes si no vienen en el post
   useEffect(() => {
@@ -150,13 +123,18 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
               </Link>
             </h4>
             {canShowFollow && (
-              <button
-                className={`follow-btn-inline ${isFollowing ? "follow-btn-inline--active" : ""}`}
-                onClick={handleFollowToggle}
-                disabled={followLoading}
-              >
-                {followLoading ? "..." : isFollowing ? "Siguiendo" : "Seguir"}
-              </button>
+              <div className="follow-btn-wrapper">
+                <button
+                  className={`follow-btn-inline ${isFollowing ? "follow-btn-inline--active" : ""}`}
+                  onClick={() => onToggleFollow?.(post.author.id)}
+                  disabled={followLoading}
+                >
+                  {followLoading ? "..." : isFollowing ? "Siguiendo" : "Seguir"}
+                </button>
+                {followError && (
+                  <span className="follow-btn-error">{followError}</span>
+                )}
+              </div>
             )}
           </div>
           <small style={{ color: "var(--color-text-secondary)" }}>
@@ -194,7 +172,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
           💬 {showComments ? "Ocultar comentarios" : "Ver comentarios"}
         </button>
         {canEdit && (
-          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon">✏️</button>
+          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon post-card-button-edit">✏️</button>
         )}
         {canDelete && (
           <button onClick={handleDelete} disabled={isDeleting} title="Eliminar" className="post-card-button-icon">

@@ -5,9 +5,11 @@ import { FeedPage } from "@/pages/Feed";
 import { ProfilePage } from "@/pages/Profile";
 import { NotFoundPage } from "@/pages/NotFound";
 import { BaseLayout } from "@/layouts/BaseLayout";
+import { PublicLayout } from "@/layouts/PublicLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { PublicProfilePage } from "@/pages/PublicProfile";
 import { PostDetailPage } from "@/pages/PostDetail";
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAuthChecking } = useAuth();
   if (isAuthChecking) return <p>Cargando...</p>;
@@ -18,10 +20,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* públicas */}
+        {/* públicas — sin layout */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        {/* privadas con layout */}
+        {/* públicas — con header */}
+        <Route element={<PublicLayout />}>
+          <Route path="/u/:username" element={<PublicProfilePage />} />
+        </Route>
+        {/* privadas — requieren auth + header */}
         <Route
           element={
             <ProtectedRoute>
@@ -30,7 +36,6 @@ function App() {
           }
         >
           <Route path="/" element={<FeedPage />} />
-          <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/posts/:postId" element={<PostDetailPage />} />
         </Route>

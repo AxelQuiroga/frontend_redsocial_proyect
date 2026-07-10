@@ -1075,6 +1075,21 @@
   border-color: var(--color-danger);
 }
 
+.follow-btn-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.follow-btn-error {
+  font-size: 0.7rem;
+  color: var(--color-danger);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ─── Botón editar en preview ─── */
 .image-preview-edit {
   position: absolute;
