@@ -2,9 +2,13 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { userService } from "@/services/userService";
 import { postService } from "@/services/postService";
+import { followService } from "@/services/followService";
 import { PostCard } from "@/components/PostCard";
+import { FollowButton } from "@/components/FollowButton";
+import { useAuth } from "@/hooks/useAuth";
 import type { UserPublicProfile } from "@/types/profile";
 import type { PaginatedPosts } from "@/types/post";
+import type { FollowCounts } from "@/services/followService";
 
 // Utilidad para sanitizar URLs y prevenir XSS
 const sanitizeUrl = (url: string): string => {
@@ -20,8 +24,10 @@ const sanitizeUrl = (url: string): string => {
 
 export function PublicProfilePage() {
   const { username } = useParams<{ username: string }>();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<UserPublicProfile | null>(null);
   const [posts, setPosts] = useState<PaginatedPosts | null>(null);
+  const [followCounts, setFollowCounts] = useState<FollowCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,13 +36,12 @@ export function PublicProfilePage() {
   // Función para cargar más posts con paginación
   const loadMorePosts = useCallback(async () => {
     if (!username || !posts || loadingMore) return;
-    
+
     setLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
       const morePostsData = await postService.getPostsByUser(username, nextPage, 10);
-      
-      // Actualizar estado con los posts nuevos
+
       setPosts(prev => prev ? {
         data: [...prev.data, ...morePostsData.data],
         meta: morePostsData.meta
@@ -52,24 +57,31 @@ export function PublicProfilePage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    
+
     const fetchData = async () => {
       try {
         if (!username) return;
         setLoading(true);
         setError("");
-        
-        // Fetch profile y posts en paralelo con AbortController
-        const [profileData, postsData] = await Promise.all([
-          userService.getUserProfile(username),
-          postService.getPostsByUser(username, 1, 10)
+
+        // 1. Fetch profile primero (necesitamos el ID del usuario)
+        const profileData = await userService.getUserProfile(username);
+
+        if (controller.signal.aborted) return;
+        setProfile(profileData);
+
+        // 2. Fetch posts + follow data en paralelo
+        const [postsData, countsData] = await Promise.all([
+          postService.getPostsByUser(username, 1, 10),
+          followService.getCounts(profileData.id).catch(() => null)
         ]);
-        
-        // Solo actualizar si no fue cancelado
+
         if (!controller.signal.aborted) {
-          setProfile(profileData);
-          setPosts(postsData);
-          setCurrentPage(1);
+          if (postsData) {
+            setPosts(postsData);
+            setCurrentPage(1);
+          }
+          if (countsData) setFollowCounts(countsData);
         }
       } catch (err) {
         if (!controller.signal.aborted) {
@@ -85,12 +97,19 @@ export function PublicProfilePage() {
     };
 
     fetchData();
-    return () => controller.abort(); // Cleanup para prevenir race conditions
+    return () => controller.abort();
   }, [username]);
 
+  const handleFollowChange = useCallback((newCounts: Partial<FollowCounts>) => {
+    setFollowCounts(prev => prev ? { ...prev, ...newCounts } : null);
+  }, []);
+
+  // Memorizar si es el propio perfil
+  const isOwnProfile = useMemo(() => {
+    return currentUser?.id === profile?.id;
+  }, [currentUser?.id, profile?.id]);
+
   // Optimización: useMemo para evitar recálculos innecesarios
-  // IMPORTANTE: estos hooks van ANTES de los early returns para respetar
-  // las Reglas de los Hooks de React (mismo orden en cada render)
   const websiteHref = useMemo(() => {
     return profile?.website ? sanitizeUrl(profile.website) : undefined;
   }, [profile?.website]);
@@ -126,9 +145,17 @@ export function PublicProfilePage() {
             </div>
           )}
 
-          <div>
-            <h2 className="section-title">{profile.displayName || profile.username || "Usuario"}</h2>
-            <p className="text-secondary">@{profile.username || "usuario"}</p>
+          <div style={{ flex: 1 }}>
+            <div className="profile-header-row">
+              <div>
+                <h2 className="section-title">{profile.displayName || profile.username || "Usuario"}</h2>
+                <p className="text-secondary">@{profile.username || "usuario"}</p>
+              </div>
+
+              {!isOwnProfile && profile.id && (
+                <FollowButton userId={profile.id} />
+              )}
+            </div>
           </div>
         </div>
 
@@ -143,6 +170,14 @@ export function PublicProfilePage() {
               </a>
             )}
           </div>
+
+          {/* Follow counts */}
+          {followCounts && (
+            <div className="profile-stats">
+              <span><strong>{followCounts.followersCount}</strong> seguidores</span>
+              <span><strong>{followCounts.followingCount}</strong> seguidos</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -152,16 +187,16 @@ export function PublicProfilePage() {
           <h3 className="section-title">Posts de @{profile.username}</h3>
           <div className="posts-list">
             {posts.data.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
+              <PostCard
+                key={post.id}
+                post={post}
               />
             ))}
           </div>
-          
+
           {posts.meta.page < posts.meta.totalPages && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <button 
+              <button
                 className="button button-secondary"
                 onClick={loadMorePosts}
                 disabled={loadingMore}
@@ -172,7 +207,7 @@ export function PublicProfilePage() {
           )}
         </div>
       )}
-      
+
       {posts && posts.data.length === 0 && (
         <div className="section">
           <p className="text-secondary">

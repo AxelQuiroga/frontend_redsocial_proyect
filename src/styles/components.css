@@ -43,6 +43,18 @@
   cursor: not-allowed;
 }
 
+.btn-following {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-following:hover {
+  background-color: #fef2f2;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
 /* Cards */
 .card {
   background-color: var(--color-surface);
