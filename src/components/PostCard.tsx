@@ -118,7 +118,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing, f
         <div className="post-card-author-info">
           <div className="post-card-author-row">
             <h4 style={{ margin: 0 }}>
-              <Link to={`/u/${post.author.username}`} className="post-author-link">
+              <Link to={isAuthor ? "/profile" : `/u/${post.author.username}`} className="post-author-link">
                 {post.author.username}
               </Link>
             </h4>
