@@ -3,7 +3,10 @@ import { postService } from "@/services/postService";
 import type { PostWithAuthor, PaginatedPosts } from "@/types/post";
 import { PostCard } from "@/components/PostCard";
 
+type FeedTab = "para-ti" | "siguiendo";
+
 export function FeedPage() {
+  const [tab, setTab] = useState<FeedTab>("para-ti");
   const [posts, setPosts] = useState<PostWithAuthor[]>([]);
   const [meta, setMeta] = useState<PaginatedPosts["meta"] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +18,12 @@ export function FeedPage() {
   const fetchFeed = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await postService.getAll(page, limit);
+      setError("");
+
+      const res = tab === "siguiendo"
+        ? await postService.getFeed(page, limit)
+        : await postService.getAll(page, limit);
+
       setPosts(res.data);
       setMeta(res.meta);
     } catch (err) {
@@ -24,23 +32,57 @@ export function FeedPage() {
     } finally {
       setLoading(false);
     }
-  },[page]);
+  }, [page, tab]);
 
   useEffect(() => {
-  fetchFeed();
-}, [fetchFeed]);
+    fetchFeed();
+  }, [fetchFeed]);
+
+  const handleTabChange = (newTab: FeedTab) => {
+    if (newTab === tab) return;
+    setTab(newTab);
+    setPage(1);
+  };
 
   if (loading) return <p className="text-secondary">Cargando feed...</p>;
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
 
   return (
     <div>
-      <h2 style={{ marginBottom: "var(--space-md)" }}>Feed público</h2>
+      <h2 style={{ marginBottom: "var(--space-md)" }}>Feed</h2>
+
+      {/* Tabs */}
+      <div className="feed-tabs">
+        <button
+          className={`feed-tab ${tab === "para-ti" ? "feed-tab--active" : ""}`}
+          onClick={() => handleTabChange("para-ti")}
+        >
+          Para ti
+        </button>
+        <button
+          className={`feed-tab ${tab === "siguiendo" ? "feed-tab--active" : ""}`}
+          onClick={() => handleTabChange("siguiendo")}
+        >
+          Siguiendo
+        </button>
+      </div>
 
       {posts.length === 0 ? (
-        <p className="text-secondary">No hay posts todavía.</p>
+        <div className="feed-empty">
+          <p className="text-secondary">
+            {tab === "siguiendo"
+              ? "No hay posts de usuarios que sigues. ¡Sigue a más personas para personalizar tu feed!"
+              : "No hay posts todavía."}
+          </p>
+        </div>
       ) : (
         <div>
+          {meta?.fromFollowed !== undefined && meta.fromFollowed > 0 && (
+            <p className="feed-from-followed">
+              Mostrando {meta.fromFollowed} posts de usuarios que sigues
+              {meta.fromFollowed < posts.length && ` y ${posts.length - meta.fromFollowed} recomendados`}
+            </p>
+          )}
           {posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
@@ -56,7 +98,7 @@ export function FeedPage() {
           >
             Anterior
           </button>
-          <span>
+          <span className="text-secondary">
             Página {meta.page} de {meta.totalPages}
           </span>
           <button

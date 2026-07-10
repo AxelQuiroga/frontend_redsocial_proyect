@@ -42,4 +42,10 @@ getAll: async (page = 1, limit = 10): Promise<PaginatedPosts> => {
     const res = await httpClient.get(`/posts/${id}`);
     return res.data;
   },
+
+  // Feed híbrido: seguidos primero, después recomendados
+  getFeed: async (page = 1, limit = 10): Promise<PaginatedPosts> => {
+    const res = await httpClient.get("/posts/feed", { params: { page, limit } });
+    return res.data;
+  },
 };

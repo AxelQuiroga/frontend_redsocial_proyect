@@ -40,6 +40,11 @@ export const followService = {
     return res.data;
   },
 
+  getStatusBatch: async (userIds: string[]): Promise<Record<string, boolean>> => {
+    const res = await httpClient.post("/follow/status/batch", { userIds });
+    return res.data.status;
+  },
+
   getCounts: async (userId: string): Promise<FollowCounts> => {
     const res = await httpClient.get(`/follow/${userId}/follow/counts`);
     return res.data;

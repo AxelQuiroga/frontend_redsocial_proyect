@@ -1559,3 +1559,51 @@
 .back-button:active {
   transform: translateY(1px);
 }
+
+/* ════════════════════════════════════════════
+   FEED TABS
+   ════════════════════════════════════════════ */
+.feed-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--space-lg);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.feed-tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.feed-tab:hover {
+  color: var(--color-text);
+}
+
+.feed-tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.feed-empty {
+  padding: var(--space-xl) 0;
+  text-align: center;
+}
+
+.feed-from-followed {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-sm);
+}

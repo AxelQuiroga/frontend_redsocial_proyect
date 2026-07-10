@@ -6,6 +6,8 @@ import type { Notification } from "@/types/notification";
 const ICONS: Record<Notification["type"], string> = {
   COMMENT_ON_POST: "💬",
   REPLY_ON_COMMENT: "↩️",
+  LIKE_ON_POST: "❤️",
+  FOLLOW: "👤",
 };
 
 function timeAgo(dateString: string): string {
@@ -111,9 +113,12 @@ export function NotificationsDropdown() {
 
       setIsOpen(false);
 
-      // Navegar al post si tiene postId
+      // Navegar según el tipo de notificación
       if (notification.postId) {
         navigate(`/posts/${notification.postId}`);
+      } else if (notification.type === 'FOLLOW') {
+        // Para follows, navegar al perfil del actor (sin username no podemos)
+        // Por ahora solo marcamos como leída
       }
     },
     [navigate]

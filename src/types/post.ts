@@ -35,6 +35,7 @@ export interface PaginatedPosts {
     limit: number;
     total: number;
     totalPages: number;
+    fromFollowed?: number;
   };
 }
 
