@@ -28,6 +28,11 @@ export function FeedPage() {
 
   // Ref para trackear toggles en vuelo y evitar race conditions con batch
   const togglingRef = useRef<Set<string>>(new Set());
+  // Refs para leer estado actual sin depender del closure en useCallback
+  const followStatusRef = useRef(followStatus);
+  followStatusRef.current = followStatus;
+  const followLoadingRef = useRef(followLoading);
+  followLoadingRef.current = followLoading;
 
   const fetchFollowStatus = useCallback(async (authorIds: string[]) => {
     const uniqueIds = [...new Set(authorIds)];
@@ -39,17 +44,7 @@ export function FeedPage() {
 
     try {
       const status = await followService.getStatusBatch(targetIds);
-      // NO sobreescribir estados que están siendo toggled en este momento
-      setFollowStatus(prev => {
-        const next = { ...prev, ...status };
-        // Restaurar los que están en toggle (el optimistic update es más reciente que el batch)
-        for (const id of togglingRef.current) {
-          if (prev[id] !== undefined) {
-            next[id] = prev[id];
-          }
-        }
-        return next;
-      });
+      setFollowStatus(prev => ({ ...prev, ...status }));
     } catch {
       // Silencioso
     }
@@ -100,15 +95,15 @@ export function FeedPage() {
 
   const handleFollowToggle = useCallback(async (authorId: string) => {
     if (!currentUser?.id) return;
-    if (followLoading[authorId]) return; // ya hay un toggle en curso
+    // Guard contra doble click usando ref (no espera re-render)
+    if (togglingRef.current.has(authorId)) return;
 
-    const current = followStatus[authorId] ?? false;
+    const current = followStatusRef.current[authorId] ?? false;
     const newStatus = !current;
 
-    // Marcar toggle en vuelo (para proteger contra race conditions con batch)
     togglingRef.current.add(authorId);
 
-    // Optimistic update
+    // Optimistic update inmediato
     setFollowStatus(prev => ({ ...prev, [authorId]: newStatus }));
     setFollowLoading(prev => ({ ...prev, [authorId]: true }));
     setFollowError(prev => {
@@ -123,6 +118,8 @@ export function FeedPage() {
       } else {
         await followService.unfollow(authorId);
       }
+      // Re-aplicar después de API exitosa (en caso de que el batch haya pisado durante el await)
+      setFollowStatus(prev => ({ ...prev, [authorId]: newStatus }));
     } catch (err) {
       console.error("Error al cambiar follow:", err);
       // Revertir al estado anterior
@@ -132,7 +129,7 @@ export function FeedPage() {
       setFollowLoading(prev => ({ ...prev, [authorId]: false }));
       togglingRef.current.delete(authorId);
     }
-  }, [currentUser?.id, followStatus, followLoading]);
+  }, [currentUser?.id]);
 
   if (loading) return <p className="text-secondary">Cargando feed...</p>;
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;

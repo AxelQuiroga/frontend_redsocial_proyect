@@ -3,13 +3,25 @@ import { useAuth } from "@/hooks/useAuth";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 
 export function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAuthChecking, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  if (isAuthChecking) {
+    return (
+      <header className="header">
+        <div className="user-info">
+          <div className="user-details">
+            <h1>Red Social</h1>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="header">
