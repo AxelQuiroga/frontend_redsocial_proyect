@@ -100,10 +100,6 @@ export function PublicProfilePage() {
     return () => controller.abort();
   }, [username]);
 
-  const handleFollowChange = useCallback((newCounts: Partial<FollowCounts>) => {
-    setFollowCounts(prev => prev ? { ...prev, ...newCounts } : null);
-  }, []);
-
   // Memorizar si es el propio perfil
   const isOwnProfile = useMemo(() => {
     return currentUser?.id === profile?.id;
