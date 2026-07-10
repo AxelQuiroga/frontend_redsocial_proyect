@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import type { PostWithAuthor } from "@/types/post";
 import type { PostImage } from "@/types/image";
@@ -7,6 +7,7 @@ import { CommentList } from "@/components/CommentList";
 import { PostEditForm } from "@/components/PostEditForm";
 import { PostImageGallery } from "@/components/posts/PostImageGallery";
 import { imageService } from "@/services/imageService";
+import { followService } from "@/services/followService";
 
 // Utilidad para sanitizar contenido y prevenir XSS
 const sanitizeContent = (content: string): string => {
@@ -23,15 +24,54 @@ interface PostCardProps {
   currentUserId?: string;
   onEdit?: (id: string, data: { title: string; content: string }) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  /** Estado de follow pre-cargado (opcional — si no se pasa, se omite el botón) */
+  isFollowing?: boolean;
+  /** Callback cuando cambia el estado de follow */
+  onFollowChange?: (authorId: string, isFollowing: boolean) => void;
 }
 
-export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProps) {
+export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: initialFollowing, onFollowChange }: PostCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [images, setImages] = useState<PostImage[]>(post.images ?? []);
   const [imagesLoading, setImagesLoading] = useState(!post.images);
   const [deleteError, setDeleteError] = useState("");
+  const [isFollowing, setIsFollowing] = useState(initialFollowing ?? false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  const isAuthor = currentUserId === post.author.id;
+
+  const handleFollowToggle = useCallback(async () => {
+    if (followLoading || initialFollowing === undefined) return;
+    setFollowLoading(true);
+    const previous = isFollowing;
+
+    // Optimistic update
+    setIsFollowing(!previous);
+    onFollowChange?.(post.author.id, !previous);
+
+    try {
+      if (previous) {
+        await followService.unfollow(post.author.id);
+      } else {
+        await followService.follow(post.author.id);
+      }
+    } catch {
+      // Revert
+      setIsFollowing(previous);
+      onFollowChange?.(post.author.id, previous);
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [post.author.id, isFollowing, followLoading, initialFollowing, onFollowChange]);
+
+  // Sincronizar si cambia el prop (ej. cuando se resetea el feed)
+  useEffect(() => {
+    if (initialFollowing !== undefined) {
+      setIsFollowing(initialFollowing);
+    }
+  }, [initialFollowing]);
 
   // Cargar imágenes si no vienen en el post
   useEffect(() => {
@@ -61,9 +101,9 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
     };
   }, [post.id, post.images]);
 
-  const isAuthor = currentUserId === post.author.id;
   const canEdit = isAuthor && onEdit;
   const canDelete = isAuthor && onDelete;
+  const canShowFollow = currentUserId && !isAuthor && initialFollowing !== undefined;
 
   const handleSave = async (title: string, content: string) => {
     if (!onEdit) return;
@@ -105,12 +145,23 @@ export function PostCard({ post, currentUserId, onEdit, onDelete }: PostCardProp
         <div className="avatar post-card-avatar">
           {post.author.username?.charAt(0).toUpperCase() || "?"}
         </div>
-        <div>
-          <h4 style={{ margin: 0 }}>
-            <Link to={`/u/${post.author.username}`} className="post-author-link">
-              {post.author.username}
-            </Link>
-          </h4>
+        <div className="post-card-author-info">
+          <div className="post-card-author-row">
+            <h4 style={{ margin: 0 }}>
+              <Link to={`/u/${post.author.username}`} className="post-author-link">
+                {post.author.username}
+              </Link>
+            </h4>
+            {canShowFollow && (
+              <button
+                className={`follow-btn-inline ${isFollowing ? "follow-btn-inline--active" : ""}`}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {followLoading ? "..." : isFollowing ? "Siguiendo" : "Seguir"}
+              </button>
+            )}
+          </div>
           <small style={{ color: "var(--color-text-secondary)" }}>
             {new Date(post.createdAt).toLocaleDateString("es-ES", {
               day: "numeric",
