@@ -1,0 +1,196 @@
+/* ════════════════════════════════════════════
+   OCEAN THEME — Animaciones y micro-interacciones
+   Personalidad: Profesional, calmada, content-first
+   ════════════════════════════════════════════ */
+
+/* ─── Timing ocean (predecible, material) ─── */
+:root {
+  --ocean-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ocean-fade: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ─── Skeleton shimmer ─── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f8fafc 25%,
+    #bfdbfe 37%,
+    #f8fafc 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--post-card {
+  height: 200px;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton--profile-header {
+  height: 300px;
+  margin-bottom: var(--space-lg);
+}
+
+.skeleton--avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton--text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton--text:last-child {
+  width: 60%;
+}
+
+.skeleton--title {
+  height: 24px;
+  width: 70%;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton--image {
+  width: 100%;
+  height: 200px;
+  margin-bottom: var(--space-md);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 400% 0; }
+  100% { background-position: -400% 0; }
+}
+
+/* ─── Spinner ocean ─── */
+.spinner {
+  color: var(--color-primary);
+  animation: ocean-spin 1s linear infinite;
+}
+
+.spinner-outer {
+  opacity: 0.3;
+  animation: ocean-spin-reverse 2s linear infinite;
+  transform-origin: center;
+}
+
+.spinner-inner {
+  opacity: 0.6;
+  animation: ocean-spin 1.5s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes ocean-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ocean-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* ─── Card hover ocean (solo sombra, sin movimiento) ─── */
+.card-hover {
+  transition: box-shadow 300ms var(--ocean-smooth);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── PostCard hover ocean ─── */
+.post-card {
+  transition: box-shadow 300ms var(--ocean-smooth);
+}
+
+.post-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* ─── Botón hover ocean (solo background, sin scale) ─── */
+.btn {
+  transition:
+    background-color 200ms var(--ocean-smooth),
+    color 200ms var(--ocean-smooth);
+}
+
+.btn:hover:not(:disabled) {
+  /* Solo cambia color, sin transform */
+}
+
+.btn:active:not(:disabled) {
+  /* Sin scale, solo visual feedback */
+}
+
+/* ─── Like button animación (smooth fill) ─── */
+.like-btn-heart {
+  transition: all 300ms var(--ocean-smooth);
+}
+
+.like-btn-heart--active {
+  color: #e0245e;
+}
+
+.like-btn-heart--animate {
+  animation: heart-fill 400ms var(--ocean-fade);
+}
+
+@keyframes heart-fill {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Cover overlay ocean ─── */
+.profile-cover-custom::after,
+.profile-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(30,58,138,0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.profile-cover-custom,
+.profile-cover {
+  position: relative;
+}
+
+/* ─── Infinite scroll sentinel (invisible, solo trigger) ─── */
+.infinite-scroll-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+/* ─── Load more pill (estilo minimalista) ─── */
+.load-more-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: var(--space-lg) auto;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ocean-smooth);
+}
+
+.load-more-pill:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: #eff6ff;
+}
+
+.load-more-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

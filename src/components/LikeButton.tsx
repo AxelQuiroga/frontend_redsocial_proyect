@@ -11,6 +11,7 @@ export function LikeButton({ postId }: LikeButtonProps) {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [heartAnimating, setHeartAnimating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -24,7 +25,6 @@ export function LikeButton({ postId }: LikeButtonProps) {
         }
       } catch (error) {
         console.error("Error loading initial likes:", error);
-        // Fallback a valores por defecto
         if (isMounted) {
           setLiked(false);
           setCount(0);
@@ -43,14 +43,13 @@ export function LikeButton({ postId }: LikeButtonProps) {
   const handleToggle = useCallback(async () => {
     if (isLoading || isInitialLoading) return;
     
-    // Guardar estado original para revertir si hay error
     const originalLiked = liked;
     const originalCount = count;
     
-    // Optimistic update
     setLiked(!originalLiked);
     setCount(originalLiked ? originalCount - 1 : originalCount + 1);
     setIsLoading(true);
+    if (!originalLiked) setHeartAnimating(true);
     
     try {
       if (originalLiked) {
@@ -60,7 +59,6 @@ export function LikeButton({ postId }: LikeButtonProps) {
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-      // Revertir al estado original en caso de error
       setLiked(originalLiked);
       setCount(originalCount);
     } finally {
@@ -83,7 +81,24 @@ export function LikeButton({ postId }: LikeButtonProps) {
         fontSize: "14px"
       }}
     >
-      <span>{isInitialLoading ? <LoaderCircle size={18} className="animate-spin" /> : (liked ? <Heart size={18} fill="#e0245e" color="#e0245e" /> : <Heart size={18} />)}</span>
+      {heartAnimating && (
+        <span
+          onAnimationEnd={() => setHeartAnimating(false)}
+          style={{ display: "none" }}
+        />
+      )}
+      <span>
+        {isInitialLoading ? (
+          <LoaderCircle size={18} className="animate-spin" />
+        ) : (
+          <Heart
+            size={18}
+            className={`like-btn-heart${heartAnimating ? " like-btn-heart--animate" : ""}${liked ? " like-btn-heart--active" : ""}`}
+            fill={liked ? "#e0245e" : "none"}
+            color={liked ? "#e0245e" : undefined}
+          />
+        )}
+      </span>
       <span>{isInitialLoading ? "..." : count}</span>
     </button>
   );

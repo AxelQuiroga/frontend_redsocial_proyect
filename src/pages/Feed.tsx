@@ -4,6 +4,8 @@ import { followService } from "@/services/followService";
 import { useAuth } from "@/hooks/useAuth";
 import type { PostWithAuthor, PaginatedPosts } from "@/types/post";
 import { PostCard } from "@/components/PostCard";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Spinner } from "@/components/ui/Spinner";
 
 type FeedTab = "para-ti" | "siguiendo";
 
@@ -21,10 +23,13 @@ export function FeedPage() {
   const [followError, setFollowError] = useState<Record<string, string>>({});
 
   const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const limit = 10;
 
   // AbortController para cancelar requests al cambiar página/tab
   const abortRef = useRef<AbortController | null>(null);
+  // Sentinel para IntersectionObserver (infinite scroll)
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Ref para trackear toggles en vuelo y evitar race conditions con batch
   const togglingRef = useRef<Set<string>>(new Set());
@@ -131,7 +136,60 @@ export function FeedPage() {
     }
   }, [currentUser?.id]);
 
-  if (loading) return <p className="text-secondary">Cargando feed...</p>;
+  // Cargar más posts (siguiente página)
+  const handleLoadMore = useCallback(async () => {
+    if (!meta || loadingMore) return;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    try {
+      const res = tab === "siguiendo"
+        ? await postService.getFeed(nextPage, limit)
+        : await postService.getAll(nextPage, limit);
+      if (abortRef.current?.signal.aborted) return;
+      setPosts(prev => [...prev, ...res.data]);
+      setMeta(res.meta);
+      setPage(nextPage);
+      const authorIds = res.data.map(p => p.author.id);
+      await fetchFollowStatus(authorIds);
+    } catch {
+      // Silencioso
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [meta, loadingMore, page, tab, fetchFollowStatus]);
+
+  // IntersectionObserver para infinite scroll
+  useEffect(() => {
+    if (!meta || meta.page >= meta.totalPages || loadingMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [meta, loadingMore, handleLoadMore]);
+
+  if (loading) {
+    return (
+      <div>
+        <h2 style={{ marginBottom: "var(--space-md)" }}>Feed</h2>
+        <div className="feed-tabs">
+          <button className="feed-tab feed-tab--active">Para ti</button>
+          <button className="feed-tab">Siguiendo</button>
+        </div>
+        <Skeleton variant="post-card" count={3} />
+      </div>
+    );
+  }
+
   if (error) return <p style={{ color: "var(--color-danger)" }}>{error}</p>;
 
   return (
@@ -184,26 +242,15 @@ export function FeedPage() {
         </div>
       )}
 
-      {meta && (
-        <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-          <button
-            className="btn btn-secondary"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            Anterior
-          </button>
-          <span className="text-secondary">
-            Página {meta.page} de {meta.totalPages}
-          </span>
-          <button
-            className="btn btn-secondary"
-            disabled={page >= meta.totalPages}
-            onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-          >
-            Siguiente
-          </button>
-        </div>
+      {meta && meta.page < meta.totalPages && (
+        <>
+          <div ref={sentinelRef} className="infinite-scroll-sentinel" />
+          {loadingMore && (
+            <div style={{ display: "flex", justifyContent: "center", padding: "var(--space-lg)" }}>
+              <Spinner size={24} />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

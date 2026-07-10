@@ -7,6 +7,7 @@ import { LikeButton } from "@/components/LikeButton";
 import { CommentList } from "@/components/CommentList";
 import { PostEditForm } from "@/components/PostEditForm";
 import { PostImageGallery } from "@/components/posts/PostImageGallery";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { imageService } from "@/services/imageService";
 
 // Utilidad para sanitizar contenido y prevenir XSS
