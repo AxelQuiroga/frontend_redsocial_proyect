@@ -7,6 +7,7 @@ import { LikeButton } from "@/components/LikeButton";
 import { CommentList } from "@/components/CommentList";
 import { PostEditForm } from "@/components/PostEditForm";
 import { PostImageGallery } from "@/components/posts/PostImageGallery";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { imageService } from "@/services/imageService";
 
 // Utilidad para sanitizar contenido y prevenir XSS
@@ -158,7 +159,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing, f
 
       {/* Imágenes del post */}
       {imagesLoading && (
-        <div className="post-card-images-loading">Cargando imágenes...</div>
+        <Skeleton variant="image" />
       )}
       {!imagesLoading && images.length > 0 && (
         <PostImageGallery images={images} />
