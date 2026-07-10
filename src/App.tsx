@@ -5,7 +5,6 @@ import { FeedPage } from "@/pages/Feed";
 import { ProfilePage } from "@/pages/Profile";
 import { NotFoundPage } from "@/pages/NotFound";
 import { BaseLayout } from "@/layouts/BaseLayout";
-import { PublicLayout } from "@/layouts/PublicLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { PublicProfilePage } from "@/pages/PublicProfile";
 import { PostDetailPage } from "@/pages/PostDetail";
@@ -22,9 +21,6 @@ function App() {
         {/* públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route element={<PublicLayout />}>
-          <Route path="/u/:username" element={<PublicProfilePage />} />
-        </Route>
         {/* privadas con layout */}
         <Route
           element={
@@ -33,9 +29,8 @@ function App() {
             </ProtectedRoute>
           }
         >
-          
-
           <Route path="/" element={<FeedPage />} />
+          <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/posts/:postId" element={<PostDetailPage />} />
         </Route>

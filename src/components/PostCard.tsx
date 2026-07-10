@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { followService } from "@/services/followService";
 import type { PostWithAuthor } from "@/types/post";
 import type { PostImage } from "@/types/image";
 import { LikeButton } from "@/components/LikeButton";
@@ -7,7 +8,6 @@ import { CommentList } from "@/components/CommentList";
 import { PostEditForm } from "@/components/PostEditForm";
 import { PostImageGallery } from "@/components/posts/PostImageGallery";
 import { imageService } from "@/services/imageService";
-import { followService } from "@/services/followService";
 
 // Utilidad para sanitizar contenido y prevenir XSS
 const sanitizeContent = (content: string): string => {
@@ -24,32 +24,35 @@ interface PostCardProps {
   currentUserId?: string;
   onEdit?: (id: string, data: { title: string; content: string }) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
-  /** Estado de follow pre-cargado (opcional — si no se pasa, se omite el botón) */
+  /** Estado inicial de follow (desde batch del feed). undefined = no mostrar botón */
   isFollowing?: boolean;
-  /** Callback cuando cambia el estado de follow */
+  /** Callback cuando el estado de follow cambia realmente (API success) */
   onFollowChange?: (authorId: string, isFollowing: boolean) => void;
 }
 
 export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: initialFollowing, onFollowChange }: PostCardProps) {
+  // Estado local de follow — inicializado desde el prop, SIN useEffect para resync
+  // Esta es la ÚNICA fuente de verdad para la UI del botón follow
+  const [isFollowing, setIsFollowing] = useState(initialFollowing ?? false);
+  const [followLoading, setFollowLoading] = useState(false);
+
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [images, setImages] = useState<PostImage[]>(post.images ?? []);
   const [imagesLoading, setImagesLoading] = useState(!post.images);
   const [deleteError, setDeleteError] = useState("");
-  const [isFollowing, setIsFollowing] = useState(initialFollowing ?? false);
-  const [followLoading, setFollowLoading] = useState(false);
 
   const isAuthor = currentUserId === post.author.id;
+  const canShowFollow = currentUserId !== undefined && !isAuthor && initialFollowing !== undefined;
 
   const handleFollowToggle = useCallback(async () => {
-    if (followLoading || initialFollowing === undefined) return;
-    setFollowLoading(true);
+    if (followLoading) return;
     const previous = isFollowing;
 
-    // Optimistic update
+    // Optimistic update inmediato en la UI
     setIsFollowing(!previous);
-    onFollowChange?.(post.author.id, !previous);
+    setFollowLoading(true);
 
     try {
       if (previous) {
@@ -57,21 +60,16 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
       } else {
         await followService.follow(post.author.id);
       }
-    } catch {
-      // Revert
+      // Avisar al padre del cambio real
+      onFollowChange?.(post.author.id, !previous);
+    } catch (err) {
+      console.error("Error al cambiar follow:", err);
+      // Revertir al estado anterior
       setIsFollowing(previous);
-      onFollowChange?.(post.author.id, previous);
     } finally {
       setFollowLoading(false);
     }
-  }, [post.author.id, isFollowing, followLoading, initialFollowing, onFollowChange]);
-
-  // Sincronizar si cambia el prop (ej. cuando se resetea el feed)
-  useEffect(() => {
-    if (initialFollowing !== undefined) {
-      setIsFollowing(initialFollowing);
-    }
-  }, [initialFollowing]);
+  }, [post.author.id, isFollowing, followLoading, onFollowChange]);
 
   // Cargar imágenes si no vienen en el post
   useEffect(() => {
@@ -103,7 +101,6 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
 
   const canEdit = isAuthor && onEdit;
   const canDelete = isAuthor && onDelete;
-  const canShowFollow = currentUserId && !isAuthor && initialFollowing !== undefined;
 
   const handleSave = async (title: string, content: string) => {
     if (!onEdit) return;
@@ -197,7 +194,7 @@ export function PostCard({ post, currentUserId, onEdit, onDelete, isFollowing: i
           💬 {showComments ? "Ocultar comentarios" : "Ver comentarios"}
         </button>
         {canEdit && (
-          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon post-card-button-edit">✏️</button>
+          <button onClick={() => setIsEditing(true)} title="Editar" className="post-card-button-icon">✏️</button>
         )}
         {canDelete && (
           <button onClick={handleDelete} disabled={isDeleting} title="Eliminar" className="post-card-button-icon">
