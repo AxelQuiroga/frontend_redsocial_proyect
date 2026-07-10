@@ -6,7 +6,6 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { CreatePostForm } from "@/components/profile/CreatePostForm";
 import { MyPostsList } from "@/components/profile/MyPostsList";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
