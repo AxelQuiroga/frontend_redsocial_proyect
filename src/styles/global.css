@@ -1,18 +1,18 @@
 /* Variables de diseño */
 :root {
-  /* Colores */
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-  --color-danger: #ef4444;
-  --color-danger-hover: #dc2626;
-  --color-success: #10b981;
+  /* Colores — SOLAR (cálido) */
+  --color-primary: #d97706;
+  --color-primary-hover: #b45309;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-success: #059669;
   
   /* Neutros */
-  --color-bg: #f3f4f6;
+  --color-bg: #fafaf9;
   --color-surface: #ffffff;
-  --color-text: #1f2937;
-  --color-text-secondary: #6b7280;
-  --color-border: #e5e7eb;
+  --color-text: #1c1917;
+  --color-text-secondary: #78716c;
+  --color-border: #e7e5e4;
   
   /* Espaciado */
   --space-xs: 4px;
