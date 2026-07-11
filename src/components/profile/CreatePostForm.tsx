@@ -68,10 +68,12 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
       setContent("");
       resetImageUpload();
       onPostCreated();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al crear post:", err);
       const msg =
-        err instanceof Error ? err.message : "Error al crear el post";
+        err?.response?.data?.error === "ValidationError"
+          ? err.response.data.details.map((d: any) => d.message).join(". ")
+          : err?.response?.data?.error || err?.message || "Error al crear el post";
       setCreateError(msg);
     } finally {
       setIsSubmitting(false);
